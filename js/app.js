@@ -1683,11 +1683,11 @@ function renderPlayerRowHtml(i){
   }).join('');
 
   const popup = G.playerEditor === i && Array.isArray(darts) && darts.length >= 3 ? `
-    <div class="player-edit-popup" style="display:flex;align-items:flex-end;gap:8px;padding:6px 8px;margin:0 0 6px 0;background:#120f0a;border:1px solid #a67c1d;border-radius:9px;box-shadow:0 10px 20px rgba(0,0,0,.25);max-width:100%;overflow-x:auto;white-space:nowrap;position:relative;">
-      ${darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:#1b140a;border:1px solid #3d2e10;border-radius:7px;">
+    <div class="player-edit-popup" style="display:flex;align-items:flex-end;gap:8px;padding:6px 8px;margin:0 0 6px 0;background:var(--popup-bg);border:1px solid var(--popup-border);border-radius:9px;box-shadow:0 10px 20px rgba(0,0,0,.25);max-width:100%;overflow-x:auto;white-space:nowrap;position:relative;">
+      ${darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:7px;">
         <span style="font-size:14px;line-height:1">${d.dartIcon||'•'}</span>
-        <span style="font-size:11px;color:#f3e3b3;line-height:1.1">${d.label||''}</span>
-        <button onclick="removePlayerDart(${i},${idx});event.stopPropagation();" style="background:transparent;border:1px solid #7c5b18;color:#f7d67a;border-radius:5px;cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;font-size:11px;line-height:1">✕</button>
+        <span style="font-size:11px;color:var(--card-text);line-height:1.1">${d.label||''}</span>
+        <button onclick="removePlayerDart(${i},${idx});event.stopPropagation();" style="background:transparent;border:1px solid var(--x-border);color:var(--x-color);border-radius:5px;cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;font-size:11px;line-height:1">✕</button>
       </div>`).join('')}
     </div>
   ` : '';
@@ -1698,7 +1698,7 @@ function renderPlayerRowHtml(i){
       <div class="p-av" style="background:${p.color};color:#fff">${ini(p.name)}</div>
       <div class="p-nm" style="display:flex;align-items:center;gap:8px;position:relative;flex:1;min-width:0">
         <span>${p.name}</span>
-        ${showActiveEditButton ? `<button class="player-edit-btn" onclick="event.stopPropagation();openPlayerEditMenu(${i});" style="background:#1c170b;border:1px solid #9b7b27;border-radius:8px;padding:2px 6px;color:#f0d67a;cursor:pointer;font-size:12px;line-height:1.2">✏️</button>` : ''}
+        ${showActiveEditButton ? `<button class="player-edit-btn" onclick="event.stopPropagation();openPlayerEditMenu(${i});" style="background:var(--edit-btn-bg);border:1px solid var(--edit-btn-border);border-radius:8px;padding:2px 6px;color:var(--edit-btn-color);cursor:pointer;font-size:12px;line-height:1.2">✏️</button>` : ''}
       </div>
       <div class="p-slots" style="flex-wrap:wrap;display:flex;gap:4px;justify-content:flex-end;flex:1;min-width:0">${slots}</div>
     </div>

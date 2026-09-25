@@ -10,6 +10,10 @@
   --selected-bg:#c8a800;--selected-border:#c8a800;
   --pv-green-text:#1a1a1a;--pv-red-text:#1a1a1a;
   --overlay-bg:rgba(237,232,220,0.9);
+  --edit-btn-bg:transparent;--edit-btn-border:#8a6a00;--edit-btn-color:#8a6a00;
+  --popup-bg:#f0ebe0;--popup-border:#8a6a00;
+  --card-bg:#faf6ec;--card-border:#8a6a00;--card-text:#6b5200;
+  --x-border:#8a6a00;--x-color:#8a6a00;
   --font-title:'Bebas Neue',cursive;--font-body:'Inter',sans-serif;
 }
 /* Mode nuit */
@@ -22,6 +26,10 @@ html[data-theme="dark"] {
   --selected-bg:#16140a;--selected-border:var(--gold-border);
   --pv-green-text:var(--green);--pv-red-text:var(--danger);
   --overlay-bg:rgba(19,19,30,0.85);
+  --edit-btn-bg:#1c170b;--edit-btn-border:#9b7b27;--edit-btn-color:#f0d67a;
+  --popup-bg:#120f0a;--popup-border:#a67c1d;
+  --card-bg:#1b140a;--card-border:#3d2e10;--card-text:#f3e3b3;
+  --x-border:#7c5b18;--x-color:#f7d67a;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
