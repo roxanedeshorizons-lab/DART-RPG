@@ -1532,7 +1532,7 @@ function renderEffectsMini(){
   function chip(label,key,size){
     const c=EFFECT_COLORS[key][G.theme==='dark'?'dark':'light'];
     const d=document.createElement('div');
-    d.style.cssText=`border-radius:6px;padding:3px 7px;font-size:${size||'18px'};line-height:1.2;background:${c.bg};border:1px solid ${c.border};${c.text?'color:'+c.text+';':''}`;
+    d.style.cssText=`border-radius:5px;padding:1px 5px;font-size:${size||'13px'};line-height:1.4;white-space:nowrap;flex-shrink:0;background:${c.bg};border:1px solid ${c.border};${c.text?'color:'+c.text+';':''}`;
     d.textContent=label;
     return d;
   }
