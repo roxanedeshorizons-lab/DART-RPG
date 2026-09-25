@@ -170,6 +170,38 @@ function saveBossOverrides(){
   try{ localStorage.setItem(BOSS_OVERRIDE_STORAGE_KEY,JSON.stringify(G.bossOverrides)); }catch(e){}
 }
 
+// ============================================================
+// MODE JOUR / NUIT
+// ============================================================
+const THEME_STORAGE_KEY='dartRpgTheme';
+function loadTheme(){
+  let theme='light';
+  try{ if(localStorage.getItem(THEME_STORAGE_KEY)==='dark') theme='dark'; }catch(e){}
+  applyTheme(theme);
+}
+function saveTheme(theme){
+  try{ localStorage.setItem(THEME_STORAGE_KEY,theme); }catch(e){}
+}
+function applyTheme(theme){
+  G.theme=theme==='dark'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',G.theme);
+  renderThemeToggle();
+}
+function toggleTheme(){
+  const next=G.theme==='dark'?'light':'dark';
+  applyTheme(next);
+  saveTheme(next);
+}
+function renderThemeToggle(){
+  const isDark=G.theme==='dark';
+  const icon=document.getElementById('theme-icon');
+  const label=document.getElementById('theme-label');
+  const sw=document.getElementById('theme-switch');
+  if(icon)icon.textContent=isDark?'🌙':'🌞';
+  if(label)label.textContent=isDark?'Mode Nuit':'Mode Jour';
+  if(sw){ sw.classList.toggle('on',isDark); sw.setAttribute('aria-checked',isDark?'true':'false'); }
+}
+
 function defaultCustomPattern(teamPV){
   const round5=n=>Math.max(5,Math.round(n/5)*5);
   const val=round5(teamPV*0.15);
@@ -644,6 +676,7 @@ let G={
   // rage tracking for current round: has1/has2 = whether each rage sector was hit this manche
   rage:{has1:false,has2:false},
   customBosses:[],bossOverrides:{},labo:null,
+  theme:'light',
 };
 let DI={mod:1,darts:[]};
 let lastDartTime=0;
@@ -2457,4 +2490,4 @@ function renderRessource(){
   if(sl)sl.textContent='Inventaire ('+G.inventory.length+' / '+G.inventorySlots+' slots)';
 }
 
-window.onload=()=>{loadCustomBosses();loadBossOverrides();renderHome();renderRef();nav('home');};
+window.onload=()=>{loadTheme();loadCustomBosses();loadBossOverrides();renderHome();renderRef();nav('home');};
