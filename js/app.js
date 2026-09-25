@@ -634,7 +634,7 @@ let G={
   screen:'home',selectedBoss:0,
   players:[{name:'Joueur 1',color:'#1a2a4a'},{name:'Joueur 2',color:'#2a1a4a'}],
   teamPV:0,teamPVMax:0,bossPV:0,bossPVMax:0,
-  manche:1,scores:[],currentPlayer:0,_playerDarts:[],playersThisRound:0,
+  manche:1,scores:[],currentPlayer:0,_playerDarts:[],
   effects:{shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0},
   goldenDartsRemaining:0,bossShield:0,liveFeed:[],finalScore:0,
   inventory:[],inventorySlots:3,
@@ -837,7 +837,7 @@ function startGame(){
   const boss=getBoss(G.selectedBoss);
   G.teamPV=boss.teamPV;G.teamPVMax=boss.teamPV;
   G.bossPV=boss.pv;G.bossPVMax=boss.pv;
-  G.manche=1;G.scores=G.players.map(()=>null);G.currentPlayer=0;G.playersThisRound=0;
+  G.manche=1;G.scores=G.players.map(()=>null);G.currentPlayer=0;
   G._playerDarts=[];G.liveFeed=[];
   G.effects={shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0};
   G.goldenDartsRemaining=0;
@@ -920,7 +920,7 @@ function dartPress(v){
     DI.darts.push({value:v,multi:m,label,ak:'bull_miroir',ef:mef,ad:{feedClass:'special'},dartIcon:'🫧',dartName:'Miroir',golden:false});
     setMod(1);renderStrip();
     if(G.bossPV<=0){setTimeout(()=>showEnd(true),400);return;}
-    if(DI.darts.length>=maxDarts){confirmP();}
+    if(DI.darts.length>=maxDarts){finishPlayerTurn();}
     return;
   }
   // Bull rouge (DBull 50 pts) — Flechettes dorees
@@ -930,7 +930,7 @@ function dartPress(v){
     addFeedItem({icon:'🎯',text:(G.players[G.currentPlayer]?.name||'')+' — Flechettes dorees !',val:'+3 flechettes x1.3',fc:'special'});
     DI.darts.push({value:v,multi:m,label,ak:'bull_dore',ef:{type:'bull_dore'},ad:{feedClass:'special'},dartIcon:'🎯',dartName:'Dorees',golden:false});
     setMod(1);renderStrip();
-    if(DI.darts.length>=maxDarts){confirmP();}
+    if(DI.darts.length>=maxDarts){finishPlayerTurn();}
     return;
   }
   const ak=getAction(v);
@@ -1064,8 +1064,8 @@ function dartPress(v){
   }
 
 
-  if(DI.darts.length>=maxDarts){confirmP();}
-  else if(isGolden&&G.goldenDartsRemaining===0){confirmP();}
+  if(DI.darts.length>=maxDarts){finishPlayerTurn();}
+  else if(isGolden&&G.goldenDartsRemaining===0){finishPlayerTurn();}
 }
 
 function addFeedItem(f){
@@ -1180,23 +1180,48 @@ function undoLastDart(){
   setMod(1);
   updatePVBars();
   renderEffectsMini();
-  renderStrip();
-
-  const btn=document.getElementById('confirm-btn');
-  if(btn){btn.disabled=DI.darts.length===0;btn.style.opacity=DI.darts.length===0?'.5':'1';}
+  confirmP();
 }
 
 function removeLast(){
   undoLastDart();
 }
 
+// Le bouton "Valider la manche" ne s'active que lorsque TOUS les joueurs ont joue leurs flechettes
 function confirmP(){
   if(G.isUndoing)return;
-  if(G.scores[G.currentPlayer]!==null)return;
-  const maxDarts=G.goldenDartsRemaining>0?6:3;
-  const canConfirm=DI.darts.length>=maxDarts;
+  const allDone=G.scores.every(s=>s!==null);
   const btn=document.getElementById('confirm-btn');
-  if(btn){btn.disabled=!canConfirm;btn.style.opacity=canConfirm? '1': '.5';}
+  if(btn){btn.disabled=!allDone;btn.style.opacity=allDone?'1':'.5';}
+  renderStrip();
+}
+
+// Verrouille les flechettes du joueur courant des qu'il a fini son tour, puis passe
+// automatiquement au joueur suivant qui n'a pas encore joue (sans attaque du boss entre les deux) —
+// la manche n'est validee et le boss n'attaque qu'une fois TOUS les joueurs verrouilles.
+function finishPlayerTurn(){
+  if(G.isUndoing)return;
+  const cp=G.currentPlayer;
+  if(G.scores[cp]!==null)return;
+  const maxDarts=G.goldenDartsRemaining>0?6:3;
+  if(DI.darts.length<maxDarts)return;
+
+  G._playerDarts[cp]=[...DI.darts];
+  G.scores[cp]=cp;
+
+  const nextPlayer=G.players.findIndex((_,idx)=>idx!==cp&&G.scores[idx]===null);
+  if(nextPlayer!==-1){
+    G.currentPlayer=nextPlayer;
+    DI={mod:1,darts:[]};
+    G.goldenDartsRemaining=0;
+    G.inputLocked=false;
+    setGridLocked(false);
+    lastDartTime=0;
+    G.playerEditor=null;
+    setMod(1);
+  }
+
+  confirmP();
   renderStrip();
 }
 
@@ -1577,14 +1602,14 @@ function removePlayerDart(playerIndex, dartIndex){
   rebuildRoundStateFromCurrentDarts();
   renderEffectsMini();
   updatePVBars();
+  confirmP();
   renderStrip();
 }
 
-function renderStrip(){
-  const el=document.getElementById('players-strip');if(!el)return;
-  const i=Number.isInteger(G.currentPlayer)?G.currentPlayer:0;
+// Construit la ligne HTML d'un seul joueur (utilise pour afficher tous les joueurs en meme temps)
+function renderPlayerRowHtml(i){
   const p=G.players[i];
-  if(!p){el.innerHTML='';return;}
+  if(!p)return '';
 
   const done=G.scores[i]!==null;
   const active=i===G.currentPlayer&&!done;
@@ -1615,7 +1640,7 @@ function renderStrip(){
     </div>
   ` : '';
 
-  el.innerHTML = `<div class="player-strip-row${active?' active':''}${done?' done':''}" style="position:relative;display:flex;flex-direction:column;align-items:stretch;gap:4px;">
+  return `<div class="player-strip-row${active?' active':''}${done?' done':''}" style="position:relative;display:flex;flex-direction:column;align-items:stretch;gap:4px;">
     ${popup}
     <div style="display:flex;align-items:center;gap:8px;width:100%">
       <div class="p-av" style="background:${p.color};color:#fff">${ini(p.name)}</div>
@@ -1626,6 +1651,12 @@ function renderStrip(){
       <div class="p-slots" style="flex-wrap:wrap;display:flex;gap:4px;justify-content:flex-end;flex:1;min-width:0">${slots}</div>
     </div>
   </div>`;
+}
+
+// Affiche tous les joueurs en meme temps dans la bande joueurs (chacun garde ses flechettes visibles)
+function renderStrip(){
+  const el=document.getElementById('players-strip');if(!el)return;
+  el.innerHTML = G.players.map((_,i)=>renderPlayerRowHtml(i)).join('');
 
   const gb=document.getElementById('golden-banner');
   if(gb){
@@ -1692,13 +1723,11 @@ function showTeamActionsOverlay(cards, onDone){
 
 function validateRound(){
   if(G.isUndoing || G.screen !== 'game') return;
-  const currentPlayer=G.currentPlayer;
-  if(DI.darts.length === 0 || G.scores[currentPlayer] !== null) return;
+  // Un seul recap pour tous les joueurs : on attend que chacun ait lance ses 3 flechettes
+  // (le verrouillage par joueur se fait des que ses 3 flechettes sont jouees, voir finishPlayerTurn())
+  if(!G.scores.every(s=>s!==null)) return;
 
   const boss=getBoss(G.selectedBoss);
-  const activeDarts=G._playerDarts[currentPlayer] && G._playerDarts[currentPlayer].length ? G._playerDarts[currentPlayer] : [...DI.darts];
-  G._playerDarts[currentPlayer] = [...activeDarts];
-  G.scores[currentPlayer] = currentPlayer;
 
   renderEffectsMini();
 
@@ -1732,12 +1761,6 @@ function validateRound(){
       effect:`L'équipe est protégée par <strong style="color:#9b7fe8">${G.effects.shield} PV de bouclier</strong>`
     });
   }
-
-  // Le boss n'attaque qu'une fois tous les 2 joueurs (1 seul joueur -> il attaque a chaque tour)
-  G.playersThisRound=(G.playersThisRound||0)+1;
-  const bossThreshold=G.players.length<=1?1:2;
-  const bossActsThisTurn=G.playersThisRound>=bossThreshold;
-  if(bossActsThisTurn)G.playersThisRound=0;
 
   const patternIndex=(G.manche-1)%boss.pattern.length;
   const bossAction=boss.pattern[patternIndex];
@@ -1806,7 +1829,7 @@ function validateRound(){
     }
   };
 
-  showTeamActionsOverlay(teamCards, bossActsThisTurn?launchBossOverlay:advanceNoBossAttack);
+  showTeamActionsOverlay(teamCards, launchBossOverlay);
 }
 
 function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
@@ -2004,14 +2027,18 @@ function showSpecialBossOverlay(boss,icon,color,title,subtitle){
 }
 
 // Rotation des joueurs (independante du rythme d'attaque du boss)
-function rotateToNextPlayer(){
-  const nextPlayer=G.players.findIndex((_,idx)=>idx!==G.currentPlayer && G.scores[idx]===null);
-  G.currentPlayer = nextPlayer !== -1 ? nextPlayer : 0;
-  if(nextPlayer === -1){
-    G.scores = G.players.map(()=>null);
-    G.currentPlayer = 0;
-  }
+// Le boss vient d'agir : nouvelle manche, tous les joueurs repartent a zero ensemble
+function endRound(bossDmg){
+  renderEffectsMini();
+  G.manche++;
+  G.bossPVRoundStart = G.bossPV;
+  G.teamPVAtRoundStart = G.teamPV;
+  G.armorAtRoundStart = G.effects.armor || 0;
+  G.shieldAtRoundStart = G.effects.shield || 0;
+  G.rawDmgThisRound = 0;
 
+  G.scores = G.players.map(()=>null);
+  G.currentPlayer = 0;
   G.playerEditor = null;
   DI = {mod:1,darts:[]};
   G.goldenDartsRemaining = 0;
@@ -2024,23 +2051,6 @@ function rotateToNextPlayer(){
   renderStrip();
   updatePVBars();
   renderEffectsMini();
-}
-
-// Appele quand le boss vient d'agir : avance son tour puis passe au joueur suivant
-function endRound(bossDmg){
-  renderEffectsMini();
-  G.manche++;
-  G.bossPVRoundStart = G.bossPV;
-  G.teamPVAtRoundStart = G.teamPV;
-  G.armorAtRoundStart = G.effects.armor || 0;
-  G.shieldAtRoundStart = G.effects.shield || 0;
-  G.rawDmgThisRound = 0;
-  rotateToNextPlayer();
-}
-
-// Appele quand le boss n'attaque pas ce tour-ci (en attente du 2e joueur) : rotation seule
-function advanceNoBossAttack(){
-  rotateToNextPlayer();
 }
 
 // ============================================================
