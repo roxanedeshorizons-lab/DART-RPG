@@ -13,17 +13,15 @@
 
 <!-- HOME -->
 <div class="screen active" id="screen-home">
-  <div class="top-bar">
+  <div class="top-bar" style="padding-bottom:6px">
     <span class="title-big" id="home-title" onclick="secretTap()">Dart RPG</span>
     <button class="settings-btn" onclick="nav('settings')" title="Paramètres">⚙️</button>
   </div>
-  <div class="section-lbl">Choisir un boss</div>
   <div class="boss-list" id="boss-list"></div>
-  <div style="height:12px"></div>
-  <div class="section-lbl">Joueurs</div>
+  <div style="height:10px"></div>
   <div class="players-setup" id="players-list"></div>
-  <div style="padding:8px 20px 0"><button class="add-btn" onclick="addP()">+ Ajouter un joueur</button></div>
-  <div style="padding:12px 20px 0;display:flex;flex-direction:column;gap:7px">
+  <div style="padding:6px 20px 0"><button class="add-btn" onclick="addP()">+ Ajouter un joueur</button></div>
+  <div style="padding:10px 20px 0;display:flex;flex-direction:column;gap:7px">
     <button class="btn-gold" onclick="startGame()">Jouer</button>
   </div>
 </div>
