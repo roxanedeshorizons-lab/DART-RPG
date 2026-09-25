@@ -98,7 +98,7 @@ const CIBLE_CONFIG=[
    10:{color:'#c8a800',icon:'🤬'},19:{color:'#c8a800',icon:'🤬'},
    6:{color:'#c85a00',icon:'🔥'},
    20:{color:'#3a2a0a',icon:'⚒️'},
-   14:{color:'#c84080',icon:'🌀'},
+   14:{color:'#c87880',icon:'🌀'},
    4:{color:'#3a1a5a',icon:'🛡️'},17:{color:'#3a1a5a',icon:'🛡️'},7:{color:'#3a1a5a',icon:'🛡️'}},
   // 2 — Frabork (Difficile) : ring order 20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5
   // neutre,bouclier,rage,faible,soin | neutre,esquive,soin,forte,eau | rage,bouclier,soin,neutre,moyenne | feu,soin,moyenne,brise,bouclier
@@ -108,7 +108,7 @@ const CIBLE_CONFIG=[
    11:{color:'#c85a00',icon:'🔥'},
    17:{color:'#0a2a3a',icon:'💧'},
    12:{color:'#3a2a0a',icon:'⚒️'},
-   10:{color:'#c84080',icon:'🌀'},
+   10:{color:'#c87880',icon:'🌀'},
    1:{color:'#3a1a5a',icon:'🛡️'},19:{color:'#3a1a5a',icon:'🛡️'},5:{color:'#3a1a5a',icon:'🛡️'}},
 ];
 
@@ -142,7 +142,7 @@ const LABO_ACTIONS=[
   {key:'soin',icon:'💚',label:'Soin',color:'#1a5a1a'},
   {key:'bouclier',icon:'🛡️',label:'Bouclier',color:'#3a1a5a'},
   {key:'feu',icon:'🔥',label:'Feu',color:'#c85a00'},
-  {key:'esquive',icon:'🌀',label:'Esquive',color:'#c84080'},
+  {key:'esquive',icon:'🌀',label:'Esquive',color:'#c87880'},
   {key:'rage',icon:'🤬',label:'Rage',color:'#c8a800',max:2},
   {key:'eau',icon:'💧',label:'Eau',color:'#0a2a3a'},
   {key:'brise',icon:'⚒️',label:'Brise-bouclier',color:'#3a2a0a'},
