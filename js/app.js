@@ -1606,7 +1606,9 @@ function rebuildRoundStateFromCurrentDarts(){
 
 function openPlayerEditMenu(playerIndex){
   if(G.screen !== 'game') return;
-  if(G.currentPlayer !== playerIndex || G.scores[playerIndex] !== null) return;
+  const isActive = G.currentPlayer === playerIndex && G.scores[playerIndex] === null;
+  const darts = isActive ? DI.darts : G._playerDarts[playerIndex];
+  if(!Array.isArray(darts) || darts.length < 3) return;
   G.playerEditor = playerIndex;
   renderStrip();
 }
@@ -1665,7 +1667,7 @@ function renderPlayerRowHtml(i){
   const active=i===G.currentPlayer&&!done;
   const darts=active?DI.darts:(done&&G._playerDarts[i]?G._playerDarts[i]:[]);
   const totalSlots=active&&darts.length>3?darts.length:3;
-  const showActiveEditButton = active && Array.isArray(DI.darts) && DI.darts.length >= 3 && G.screen === 'game';
+  const showActiveEditButton = G.screen === 'game' && Array.isArray(darts) && darts.length >= 3;
   const slots=Array.from({length:totalSlots},(_,j)=>{
     const d=darts[j];
     if(d){
@@ -1680,9 +1682,9 @@ function renderPlayerRowHtml(i){
     return `<div class="p-slot" style="background:var(--bg);color:#111">—</div>`;
   }).join('');
 
-  const popup = G.playerEditor === i && active && Array.isArray(DI.darts) && DI.darts.length >= 3 ? `
+  const popup = G.playerEditor === i && Array.isArray(darts) && darts.length >= 3 ? `
     <div class="player-edit-popup" style="display:flex;align-items:flex-end;gap:8px;padding:6px 8px;margin:0 0 6px 0;background:#120f0a;border:1px solid #a67c1d;border-radius:9px;box-shadow:0 10px 20px rgba(0,0,0,.25);max-width:100%;overflow-x:auto;white-space:nowrap;position:relative;">
-      ${DI.darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:#1b140a;border:1px solid #3d2e10;border-radius:7px;">
+      ${darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:#1b140a;border:1px solid #3d2e10;border-radius:7px;">
         <span style="font-size:14px;line-height:1">${d.dartIcon||'•'}</span>
         <span style="font-size:11px;color:#f3e3b3;line-height:1.1">${d.label||''}</span>
         <button onclick="removePlayerDart(${i},${idx});event.stopPropagation();" style="background:transparent;border:1px solid #7c5b18;color:#f7d67a;border-radius:5px;cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;font-size:11px;line-height:1">✕</button>
