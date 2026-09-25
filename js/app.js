@@ -188,6 +188,7 @@ function applyTheme(theme){
   renderThemeToggle();
   renderCible();
   renderLaboCible();
+  renderEffectsMini();
 }
 function toggleTheme(){
   const next=G.theme==='dark'?'light':'dark';
@@ -1521,9 +1522,17 @@ function renderEffectsMini(){
   if(!team||!boss)return;
   team.innerHTML='';boss.innerHTML='';
 
-  function chip(label,bg,border,size){
+  const EFFECT_COLORS={
+    dodge:{dark:{bg:'#080e1a',border:'#1a2a4a'},light:{bg:'rgba(74,154,232,0.15)',border:'#4a9ae8',text:'#173a5a'}},
+    dodgePerfect:{dark:{bg:'#080820',border:'#2a4a8a'},light:{bg:'rgba(74,154,232,0.15)',border:'#4a9ae8',text:'#173a5a'}},
+    shield:{dark:{bg:'#100820',border:'#2a1a4a'},light:{bg:'rgba(72,120,200,0.15)',border:'#4878c8',text:'#1a3a6a'}},
+    armor:{dark:{bg:'#1a0e18',border:'#5a2a7a'},light:{bg:'rgba(124,95,200,0.15)',border:'#7c5fc8',text:'#3a2a6a'}},
+    bossShield:{dark:{bg:'#0a1020',border:'#1a3a6a'},light:{bg:'rgba(72,120,200,0.15)',border:'#4878c8',text:'#1a3a6a'}}
+  };
+  function chip(label,key,size){
+    const c=EFFECT_COLORS[key][G.theme==='dark'?'dark':'light'];
     const d=document.createElement('div');
-    d.style.cssText=`border-radius:6px;padding:3px 7px;font-size:${size||'18px'};line-height:1.2;background:${bg};border:1px solid ${border};`;
+    d.style.cssText=`border-radius:6px;padding:3px 7px;font-size:${size||'18px'};line-height:1.2;background:${c.bg};border:1px solid ${c.border};${c.text?'color:'+c.text+';':''}`;
     d.textContent=label;
     return d;
   }
@@ -1531,17 +1540,17 @@ function renderEffectsMini(){
 
   // === Zone équipe (verte) — défenses de l'équipe ===
   if((G.effects.dodgeCharges||0)>0)
-    team.appendChild(chip('🌀'.repeat(G.effects.dodgeCharges),'#080e1a','#1a2a4a'));
+    team.appendChild(chip('🌀'.repeat(G.effects.dodgeCharges),'dodge'));
   if(G.effects.dodge>=1.0)
-    team.appendChild(chip('🌀✨','#080820','#2a4a8a'));
+    team.appendChild(chip('🌀✨','dodgePerfect'));
   if((G.effects.shield||0)>0)
-    team.appendChild(chip(shieldEmoji(G.effects.shield)+' '+G.effects.shield,'#100820','#2a1a4a'));
+    team.appendChild(chip(shieldEmoji(G.effects.shield)+' '+G.effects.shield,'shield'));
 
   // === Zone boss (rouge) — dégâts infligés + effets boss ===
   if((G.effects.armor||0)>0)
-    boss.appendChild(chip('🛡️'.repeat(G.effects.armor)+' −'+(G.effects.armor*20)+'%','#1a0e18','#5a2a7a'));
+    boss.appendChild(chip('🛡️'.repeat(G.effects.armor)+' −'+(G.effects.armor*20)+'%','armor'));
   if(G.bossShield>0)
-    boss.appendChild(chip('🛡️'.repeat(G.bossShield>60?4:G.bossShield>30?3:1),'#0a1020','#1a3a6a'));
+    boss.appendChild(chip('🛡️'.repeat(G.bossShield>60?4:G.bossShield>30?3:1),'bossShield'));
 }
 
 function rebuildRoundStateFromCurrentDarts(){
