@@ -305,7 +305,7 @@ function renderLaboCible(){
   const R={bullseye:12,bull:30,tripleIn:105,tripleOut:120,doubleIn:172,doubleOut:190,numRing:202};
   const isDark=G.theme==='dark';
   const NEUTRAL=isDark?'#2a2a2a':'#c8c4bc';
-  const BOARD_BG=isDark?'#0a0a0a':'#e0ddd8';
+  const BOARD_BG=isDark?'#0a0a0a':'#e8e3d8';
   const NUM_COLOR=isDark?'#cccccc':'#1a1a1a';
 
   function darkenColor(hex,pct){

@@ -304,8 +304,13 @@ html[data-theme="dark"] .codex-sep{background:linear-gradient(90deg,transparent,
 .item-game-btn.has-items{border-color:var(--gold-border);color:var(--gold);}
 
 /* LABO DE CREATION */
-.labo-ov{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;z-index:550;display:none;flex-direction:column;background:#0a0a0f;overflow:hidden;}
+.labo-ov{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;z-index:550;display:none;flex-direction:column;background:#f0ebe0;overflow:hidden;}
+html[data-theme="dark"] .labo-ov{background:#0a0a0f;}
 .labo-ov.active{display:flex;}
+#labo-ov .codex-head{background:#ede8dc;border-bottom:1px solid #c8c0b0;}
+html[data-theme="dark"] #labo-ov .codex-head{background:transparent;border-bottom-color:#3a3000;}
+#labo-title{color:#1a1a1a;}
+html[data-theme="dark"] #labo-title{color:var(--gold);}
 .labo-scroll{overflow-y:auto;padding:14px 18px 40px;flex:1;display:flex;flex-direction:column;gap:14px;}
 .labo-field{display:flex;flex-direction:column;gap:6px;}
 .labo-label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;}
