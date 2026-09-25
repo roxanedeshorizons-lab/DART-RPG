@@ -1526,7 +1526,7 @@ function renderEffectsMini(){
     dodge:{dark:{bg:'#080e1a',border:'#1a2a4a'},light:{bg:'rgba(74,154,232,0.15)',border:'#4a9ae8',text:'#173a5a'}},
     dodgePerfect:{dark:{bg:'#080820',border:'#2a4a8a'},light:{bg:'rgba(74,154,232,0.15)',border:'#4a9ae8',text:'#173a5a'}},
     shield:{dark:{bg:'#100820',border:'#2a1a4a'},light:{bg:'rgba(72,120,200,0.15)',border:'#4878c8',text:'#1a3a6a'}},
-    armor:{dark:{bg:'#1a0e18',border:'#5a2a7a'},light:{bg:'rgba(124,95,200,0.15)',border:'#7c5fc8',text:'#3a2a6a'}},
+    armor:{dark:{bg:'#1a0e18',border:'#5a2a7a'},light:{bg:'rgba(120,80,200,0.15)',border:'#7850c8',text:'#3a1a6a'}},
     bossShield:{dark:{bg:'#0a1020',border:'#1a3a6a'},light:{bg:'rgba(72,120,200,0.15)',border:'#4878c8',text:'#1a3a6a'}}
   };
   function chip(label,key,size){
