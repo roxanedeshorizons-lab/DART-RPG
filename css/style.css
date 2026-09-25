@@ -14,7 +14,7 @@
   --popup-bg:#f0ebe0;--popup-border:#8a6a00;
   --card-bg:#faf6ec;--card-border:#8a6a00;--card-text:#6b5200;
   --x-border:#8a6a00;--x-color:#8a6a00;
-  --ov-bg:#f0ebe0;--ov-bg-team-phase:radial-gradient(ellipse at bottom, rgba(200,60,60,0.08), transparent 46%), #f0ebe0;
+  --ov-bg:rgba(240,235,224,0.92);--ov-bg-team-phase:radial-gradient(ellipse at bottom, rgba(200,60,60,0.08), transparent 46%), rgba(240,235,224,0.92);
   --ov-text:#1a1a1a;--ov-text-mid:#1a1a1a;--ov-sublabel:#1a1a1a;--ov-text-faint:#5a5040;--ov-strike:#b0a890;
   --ov-dmg:#8a1a1a;--ov-heal:#1a5a1a;--ov-boss-name:#8a6a00;
   --font-title:'Bebas Neue',cursive;--font-body:'Inter',sans-serif;
@@ -33,7 +33,7 @@ html[data-theme="dark"] {
   --popup-bg:#120f0a;--popup-border:#a67c1d;
   --card-bg:#1b140a;--card-border:#3d2e10;--card-text:#f3e3b3;
   --x-border:#7c5b18;--x-color:#f7d67a;
-  --ov-bg:rgba(10,4,4,0.94);--ov-bg-team-phase:radial-gradient(ellipse at bottom, rgba(180,30,30,0.26), transparent 46%), rgba(10,4,4,0.96);
+  --ov-bg:rgba(8,10,8,0.92);--ov-bg-team-phase:radial-gradient(ellipse at bottom, rgba(180,30,30,0.26), transparent 46%), rgba(8,10,8,0.92);
   --ov-text:#fff;--ov-text-mid:#ccc;--ov-sublabel:#e08080;--ov-text-faint:#888;--ov-strike:#555;
   --ov-dmg:var(--danger);--ov-heal:var(--green);--ov-boss-name:var(--danger);
 }
@@ -85,7 +85,7 @@ body{font-family:var(--font-body);background:var(--bg);display:flex;justify-cont
 .add-btn{display:flex;align-items:center;gap:8px;background:transparent;border:1px dashed var(--border);border-radius:10px;padding:10px 13px;font-family:var(--font-body);font-size:13px;color:var(--dim);cursor:pointer;width:100%;}
 
 /* GAME */
-.pv-section{padding:3px 12px;flex-shrink:0;position:sticky;top:0;z-index:10;background:var(--bg);}
+.pv-section{padding:3px 12px;flex-shrink:0;position:sticky;top:0;z-index:20;background:var(--bg);}
 .pv-row{display:flex;gap:6px;margin-bottom:4px;}
 .pv-box{flex:1;border-radius:10px;padding:6px 10px;display:flex;align-items:center;gap:7px;min-width:0;}
 .pv-box.team{background:var(--green-bg);border:1px solid var(--green-border);}
