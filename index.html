@@ -81,15 +81,15 @@
       <button id="mod-1"></button><button id="mod-2"></button><button id="mod-3"></button>
     </div>
 
-    <!-- Cible SVG interactive : DOUBLE à gauche / cible au centre / TRIPLE à droite -->
+    <!-- Cible SVG interactive : DOUBLE et TRIPLE en overlay dans les coins, cible en pleine largeur -->
     <div id="cible-section">
-      <div class="cible-wrap">
-        <button id="cible-btn-double" class="cible-mod-btn" onclick="setMod(2)">DOUBLE</button>
-        <div class="cible-svg-holder">
-          <svg id="cible-svg" viewBox="-20 -20 440 440" xmlns="http://www.w3.org/2000/svg"></svg>
-          <button class="cible-miss-btn" onclick="dartPress(0)">0 — Manqué</button>
-        </div>
-        <button id="cible-btn-triple" class="cible-mod-btn" onclick="setMod(3)">TRIPLE</button>
+      <div class="cible-wrap" style="position:relative">
+        <button id="cible-btn-double" class="cible-mod-btn" onclick="setMod(2)"
+          style="position:absolute;top:0;left:0;width:80px;height:40px;border-radius:8px;z-index:10">DOUBLE</button>
+        <button id="cible-btn-triple" class="cible-mod-btn" onclick="setMod(3)"
+          style="position:absolute;top:0;right:0;width:80px;height:40px;border-radius:8px;z-index:10">TRIPLE</button>
+        <svg id="cible-svg" viewBox="-20 -20 440 440" xmlns="http://www.w3.org/2000/svg"></svg>
+        <button class="cible-miss-btn" onclick="dartPress(0)">0 — Manqué</button>
       </div>
     </div>
 

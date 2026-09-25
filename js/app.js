@@ -634,7 +634,7 @@ let G={
   screen:'home',selectedBoss:0,
   players:[{name:'Joueur 1',color:'#1a2a4a'},{name:'Joueur 2',color:'#2a1a4a'}],
   teamPV:0,teamPVMax:0,bossPV:0,bossPVMax:0,
-  manche:1,scores:[],currentPlayer:0,_playerDarts:[],
+  manche:1,scores:[],currentPlayer:0,_playerDarts:[],playersThisRound:0,
   effects:{shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0},
   goldenDartsRemaining:0,bossShield:0,liveFeed:[],finalScore:0,
   inventory:[],inventorySlots:3,
@@ -837,7 +837,7 @@ function startGame(){
   const boss=getBoss(G.selectedBoss);
   G.teamPV=boss.teamPV;G.teamPVMax=boss.teamPV;
   G.bossPV=boss.pv;G.bossPVMax=boss.pv;
-  G.manche=1;G.scores=G.players.map(()=>null);G.currentPlayer=0;
+  G.manche=1;G.scores=G.players.map(()=>null);G.currentPlayer=0;G.playersThisRound=0;
   G._playerDarts=[];G.liveFeed=[];
   G.effects={shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0};
   G.goldenDartsRemaining=0;
@@ -1696,8 +1696,6 @@ function validateRound(){
   if(DI.darts.length === 0 || G.scores[currentPlayer] !== null) return;
 
   const boss=getBoss(G.selectedBoss);
-  const patternIndex=(G.manche-1)%boss.pattern.length;
-  const bossAction=boss.pattern[patternIndex];
   const activeDarts=G._playerDarts[currentPlayer] && G._playerDarts[currentPlayer].length ? G._playerDarts[currentPlayer] : [...DI.darts];
   G._playerDarts[currentPlayer] = [...activeDarts];
   G.scores[currentPlayer] = currentPlayer;
@@ -1734,6 +1732,15 @@ function validateRound(){
       effect:`L'équipe est protégée par <strong style="color:#9b7fe8">${G.effects.shield} PV de bouclier</strong>`
     });
   }
+
+  // Le boss n'attaque qu'une fois tous les 2 joueurs (1 seul joueur -> il attaque a chaque tour)
+  G.playersThisRound=(G.playersThisRound||0)+1;
+  const bossThreshold=G.players.length<=1?1:2;
+  const bossActsThisTurn=G.playersThisRound>=bossThreshold;
+  if(bossActsThisTurn)G.playersThisRound=0;
+
+  const patternIndex=(G.manche-1)%boss.pattern.length;
+  const bossAction=boss.pattern[patternIndex];
 
   const launchBossOverlay=()=>{
     if(bossAction.type==='armorUp'){
@@ -1799,7 +1806,7 @@ function validateRound(){
     }
   };
 
-  showTeamActionsOverlay(teamCards,launchBossOverlay);
+  showTeamActionsOverlay(teamCards, bossActsThisTurn?launchBossOverlay:advanceNoBossAttack);
 }
 
 function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
@@ -1996,10 +2003,8 @@ function showSpecialBossOverlay(boss,icon,color,title,subtitle){
   btn.onclick=()=>{ov.classList.remove('active');endRound(0);};
 }
 
-function endRound(bossDmg){
-  renderEffectsMini();
-  G.manche++;
-
+// Rotation des joueurs (independante du rythme d'attaque du boss)
+function rotateToNextPlayer(){
   const nextPlayer=G.players.findIndex((_,idx)=>idx!==G.currentPlayer && G.scores[idx]===null);
   G.currentPlayer = nextPlayer !== -1 ? nextPlayer : 0;
   if(nextPlayer === -1){
@@ -2013,17 +2018,29 @@ function endRound(bossDmg){
   G.inputLocked = false;
   setGridLocked(false);
   lastDartTime = 0;
-  G.bossPVRoundStart = G.bossPV;
-  G.teamPVAtRoundStart = G.teamPV;
-  G.armorAtRoundStart = G.effects.armor || 0;
-  G.shieldAtRoundStart = G.effects.shield || 0;
-  G.rawDmgThisRound = 0;
 
   const btn=document.getElementById('confirm-btn');
   if(btn){btn.disabled=true;btn.style.opacity='.5';}
   renderStrip();
   updatePVBars();
   renderEffectsMini();
+}
+
+// Appele quand le boss vient d'agir : avance son tour puis passe au joueur suivant
+function endRound(bossDmg){
+  renderEffectsMini();
+  G.manche++;
+  G.bossPVRoundStart = G.bossPV;
+  G.teamPVAtRoundStart = G.teamPV;
+  G.armorAtRoundStart = G.effects.armor || 0;
+  G.shieldAtRoundStart = G.effects.shield || 0;
+  G.rawDmgThisRound = 0;
+  rotateToNextPlayer();
+}
+
+// Appele quand le boss n'attaque pas ce tour-ci (en attente du 2e joueur) : rotation seule
+function advanceNoBossAttack(){
+  rotateToNextPlayer();
 }
 
 // ============================================================
