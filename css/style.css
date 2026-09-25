@@ -141,7 +141,7 @@ body{font-family:var(--font-body);background:var(--bg);display:flex;justify-cont
 .feed-dropdown .live-feed{margin:0;max-height:120px;overflow-y:auto;}
 
 /* CIBLE SVG */
-#cible-section{margin-bottom:4px;}
+#cible-section{margin-top:10px;margin-bottom:4px;}
 .cible-wrap{display:flex;align-items:center;margin-bottom:4px;}
 #cible-svg{flex:1;min-width:0;display:block;width:100%;height:auto;}
 .cible-mod-btn{background:var(--bg2);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;font-family:var(--font-body);letter-spacing:.04em;cursor:pointer;}
