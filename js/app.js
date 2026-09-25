@@ -189,6 +189,7 @@ function applyTheme(theme){
   renderCible();
   renderLaboCible();
   renderEffectsMini();
+  renderCodex();
 }
 function toggleTheme(){
   const next=G.theme==='dark'?'light':'dark';
@@ -781,7 +782,8 @@ function renderCodex(){
   if(!el)return;
   el.innerHTML='';
   const typeIcon={atk:'⚔️',atkFire:'🔥⚔️',heal:'💊',shield:'🛡️',cancelFire:'💨',fireDot:'🔥',armorUp:'🛡️🛡️'};
-  const typeColor={atk:'var(--danger)',atkFire:'#e85020',heal:'var(--green)',shield:'var(--purple)',cancelFire:'#40c0e0',fireDot:'#c84020',armorUp:'#e8a030'};
+  const isDark=G.theme==='dark';
+  const typeColor={atk:isDark?'var(--danger)':'#8a1a1a',atkFire:'#e85020',heal:isDark?'var(--green)':'#1a5a1a',shield:isDark?'var(--purple)':'#5a30a0',cancelFire:'#40c0e0',fireDot:'#c84020',armorUp:'#e8a030'};
   allBosses().forEach((boss,bi)=>{
     const block=document.createElement('div');
     block.className='codex-boss-block';

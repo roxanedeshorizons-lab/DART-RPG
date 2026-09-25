@@ -147,11 +147,11 @@
     <div style="display:flex;align-items:center;gap:10px">
       <span style="font-size:24px">📜</span>
       <div>
-        <div style="font-family:var(--font-title);font-size:20px;color:var(--gold);letter-spacing:.07em">CODEX DES BOSS</div>
+        <div id="codex-title" style="font-family:var(--font-title);font-size:20px;letter-spacing:.07em">CODEX DES BOSS</div>
         <div style="font-size:11px;color:#8a7030">Archives secrètes — Ne pas divulguer</div>
       </div>
     </div>
-    <button onclick="closeCodex()" style="background:#1a1400;border:1px solid #3a2800;border-radius:8px;width:34px;height:34px;font-size:18px;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    <button class="codex-close-btn" onclick="closeCodex()" style="border-radius:8px;width:34px;height:34px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
   </div>
   <div style="padding:10px 14px 0;flex-shrink:0">
     <button class="btn-gold" onclick="openLaboFromCodex()" style="height:44px">⚗️ Ouvrir le Labo</button>
