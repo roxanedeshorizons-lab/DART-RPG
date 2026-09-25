@@ -304,6 +304,7 @@ function renderLaboCible(){
   const isDark=G.theme==='dark';
   const NEUTRAL=isDark?'#2a2a2a':'#c8c4bc';
   const BOARD_BG=isDark?'#0a0a0a':'#e0ddd8';
+  const NUM_COLOR=isDark?'#cccccc':'#1a1a1a';
 
   function darkenColor(hex,pct){
     const n=parseInt(hex.slice(1),16),f=1-pct/100;
@@ -384,7 +385,7 @@ function renderLaboCible(){
 
   SECTORS.forEach((num,i)=>{
     const[x,y]=pt(i*18,R.numRing);
-    const t=mkEl('text',{x:x.toFixed(2),y:y.toFixed(2),'text-anchor':'middle','dominant-baseline':'central',fill:'#cccccc','font-size':'14','font-weight':'700','pointer-events':'none'});
+    const t=mkEl('text',{x:x.toFixed(2),y:y.toFixed(2),'text-anchor':'middle','dominant-baseline':'central',fill:NUM_COLOR,'font-size':'14','font-weight':'700','pointer-events':'none'});
     t.textContent=num;
     svgEl.appendChild(t);
   });
@@ -1354,6 +1355,7 @@ function renderCible(){
   const isDark=G.theme==='dark';
   const NEUTRAL=isDark?'#2a2a2a':'#c8c4bc';
   const BOARD_BG=isDark?'#0a0a0a':'#e0ddd8';
+  const NUM_COLOR=isDark?'#cccccc':'#1a1a1a';
   const BULL_COLOR='#1a5a1a',BS_COLOR='#5a0000';
   const rageSet=new Set(getBoss(G.selectedBoss).sectors.rage||[]);
 
@@ -1442,7 +1444,7 @@ function renderCible(){
   // Numéros
   SECTORS.forEach((num,i)=>{
     const[x,y]=pt(i*18,R.numRing);
-    const t=mkEl('text',{x:x.toFixed(2),y:y.toFixed(2),'text-anchor':'middle','dominant-baseline':'central',fill:'#cccccc','font-size':'14','font-weight':'700','pointer-events':'none'});
+    const t=mkEl('text',{x:x.toFixed(2),y:y.toFixed(2),'text-anchor':'middle','dominant-baseline':'central',fill:NUM_COLOR,'font-size':'14','font-weight':'700','pointer-events':'none'});
     t.textContent=num;
     svgEl.appendChild(t);
   });
