@@ -1756,7 +1756,7 @@ function showTeamActionsOverlay(cards, onDone){
     // Title
     const ti=document.createElement('div');ti.style.cssText='font-family:var(--font-title);font-size:26px;color:'+card.color+';letter-spacing:.06em;margin-bottom:6px;text-align:center';ti.textContent=card.title;
     // Subtitle
-    const su=document.createElement('div');su.style.cssText='font-size:15px;color:#ccc;margin-bottom:20px;text-align:center';su.textContent=card.subtitle;
+    const su=document.createElement('div');su.style.cssText='font-size:15px;color:var(--ov-text-mid);margin-bottom:20px;text-align:center';su.textContent=card.subtitle;
     // Effect box
     const bx=document.createElement('div');bx.style.cssText='background:'+card.color+'18;border:1px solid '+card.color+'44;border-radius:12px;padding:14px 20px;margin-bottom:12px;text-align:center;width:100%';
     bx.innerHTML='<div style="font-size:13px;color:'+card.color+';line-height:1.5">'+card.effect+'</div>';
@@ -1927,25 +1927,25 @@ function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
           dmgWrap.appendChild(shield);
 
           const dmgRow=document.createElement('div');dmgRow.style.cssText='display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px';
-          const dRaw=document.createElement('div');dRaw.style.cssText='font-family:var(--font-title);font-size:52px;color:#555;text-decoration:line-through';dRaw.textContent='−'+rawTotal;
+          const dRaw=document.createElement('div');dRaw.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-strike);text-decoration:line-through';dRaw.textContent='−'+rawTotal;
           const dArr=document.createElement('div');dArr.style.cssText='font-size:22px;color:var(--dim)';dArr.textContent='→';
-          const dReal=document.createElement('div');dReal.style.cssText='font-family:var(--font-title);font-size:72px;color:var(--danger);line-height:1';dReal.textContent='−'+dmgEquipe;
+          const dReal=document.createElement('div');dReal.style.cssText='font-family:var(--font-title);font-size:72px;color:var(--ov-dmg);line-height:1';dReal.textContent='−'+dmgEquipe;
           dmgRow.appendChild(dRaw);dmgRow.appendChild(dArr);dmgRow.appendChild(dReal);
           dmgWrap.appendChild(dmgRow);
         } else {
           const counter=document.createElement('div');
           counter.className='team-attack-dmg';
-          counter.style.color='var(--danger)';
+          counter.style.color='var(--ov-dmg)';
           counter.textContent='−'+dmgEquipe;
           dmgWrap.appendChild(counter);
         }
 
         const bossBar=document.createElement('div');bossBar.style.cssText='display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;margin-bottom:14px';
-        const before=document.createElement('div');before.style.cssText='font-family:var(--font-title);font-size:42px;color:#666';before.textContent=bossPVAvant;
+        const before=document.createElement('div');before.style.cssText='font-family:var(--font-title);font-size:42px;color:var(--ov-strike)';before.textContent=bossPVAvant;
         const arrow=document.createElement('div');arrow.style.cssText='font-size:26px;color:var(--text)';arrow.textContent='→';
-        const after=document.createElement('div');after.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--danger);font-weight:700;animation:teamDamagePulse 0.8s ease-in-out';after.textContent=bossPVApres;
+        const after=document.createElement('div');after.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-dmg);font-weight:700;animation:teamDamagePulse 0.8s ease-in-out';after.textContent=bossPVApres;
         bossBar.appendChild(before);bossBar.appendChild(arrow);bossBar.appendChild(after);
-        const label=document.createElement('div');label.style.cssText='font-size:14px;color:#e08080;margin-bottom:12px';label.textContent=`Le boss descend en points de vie !`;
+        const label=document.createElement('div');label.style.cssText='font-size:14px;color:var(--ov-sublabel);margin-bottom:12px';label.textContent=`Le boss descend en points de vie !`;
         dmgWrap.appendChild(label);dmgWrap.appendChild(bossBar);
         content.appendChild(dmgWrap);
         phaseTimer=setTimeout(()=>{phase=1;renderPhase();},2300);
@@ -1959,10 +1959,10 @@ function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
 
     } else if(phase===1){
       const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:10px';e1.textContent=fireNote?'🔥⚔️':'💀';
-      const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--danger);letter-spacing:.08em;margin-bottom:8px';e2.textContent=boss.nom.toUpperCase();
-      const e3=document.createElement('div');e3.style.cssText='font-size:16px;color:#e08080;margin-bottom:20px';e3.textContent=bossAction.desc;
-      const e4=document.createElement('div');e4.style.cssText='font-family:var(--font-title);font-size:88px;color:var(--danger);line-height:1;margin-bottom:6px';e4.textContent=rawDmg;
-      const e5=document.createElement('div');e5.style.cssText='font-size:14px;color:#e08080;margin-bottom:'+(fireNote?'12px':'32px');e5.textContent='PV bruts';
+      const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--ov-boss-name);letter-spacing:.08em;margin-bottom:8px';e2.textContent=boss.nom.toUpperCase();
+      const e3=document.createElement('div');e3.style.cssText='font-size:16px;color:var(--ov-sublabel);margin-bottom:20px';e3.textContent=bossAction.desc;
+      const e4=document.createElement('div');e4.style.cssText='font-family:var(--font-title);font-size:88px;color:var(--ov-dmg);line-height:1;margin-bottom:6px';e4.textContent=rawDmg;
+      const e5=document.createElement('div');e5.style.cssText='font-size:14px;color:var(--ov-sublabel);margin-bottom:'+(fireNote?'12px':'32px');e5.textContent='PV bruts';
       [e1,e2,e3,e4,e5].forEach(el=>content.appendChild(el));
       if(fireNote){
         const ef=document.createElement('div');ef.style.cssText='font-size:14px;color:#e85020;margin-bottom:24px;padding:6px 12px;background:#1a0808;border-radius:8px;border:1px solid #4a1010';ef.textContent='🔥 '+fireNote;
@@ -1976,11 +1976,11 @@ function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
     } else if(phase===2){
       const mod=mods[modStep];
       const e1=document.createElement('div');e1.style.cssText='font-size:64px;margin-bottom:12px';e1.textContent=mod.icon;
-      const e2=document.createElement('div');e2.style.cssText='font-size:18px;font-weight:600;color:#fff;margin-bottom:20px;text-align:center;line-height:1.3';e2.textContent=mod.label;
+      const e2=document.createElement('div');e2.style.cssText='font-size:18px;font-weight:600;color:var(--ov-text);margin-bottom:20px;text-align:center;line-height:1.3';e2.textContent=mod.label;
       // Before → After
       const cmp=document.createElement('div');cmp.style.cssText='display:flex;align-items:center;gap:20px;margin-bottom:24px';
       const bl=document.createElement('div');bl.style.cssText='text-align:center';
-      const bn=document.createElement('div');bn.style.cssText='font-family:var(--font-title);font-size:52px;color:#555;text-decoration:line-through';bn.textContent=mod.before;
+      const bn=document.createElement('div');bn.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-strike);text-decoration:line-through';bn.textContent=mod.before;
       const blab=document.createElement('div');blab.style.cssText='font-size:11px;color:var(--dim);margin-top:2px';blab.textContent='Avant';
       bl.appendChild(bn);bl.appendChild(blab);
       const arr=document.createElement('div');arr.style.cssText='font-size:30px;color:var(--dim)';arr.textContent='→';
@@ -1993,7 +1993,7 @@ function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
       // Progress dots if multiple mods
       if(mods.length>1){
         const dots=document.createElement('div');dots.style.cssText='display:flex;gap:7px;justify-content:center;margin-bottom:10px';
-        mods.forEach((_,i)=>{const d=document.createElement('div');d.style.cssText='width:8px;height:8px;border-radius:50%;background:'+(i===modStep?'var(--danger)':i<modStep?'#555':'var(--border)');dots.appendChild(d);});
+        mods.forEach((_,i)=>{const d=document.createElement('div');d.style.cssText='width:8px;height:8px;border-radius:50%;background:'+(i===modStep?'var(--ov-dmg)':i<modStep?'var(--ov-strike)':'var(--border)');dots.appendChild(d);});
         content.appendChild(dots);
       }
       btn.style.display='block';
@@ -2015,13 +2015,13 @@ function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
       updatePVBars();
       const defeat=G.teamPV<=0;
       const victory=G.bossPV<=0;
-      const impactColor=finalDmg===0?'var(--gold)':defeat?'var(--danger)':'#e06060';
+      const impactColor=finalDmg===0?'var(--gold)':'var(--ov-dmg)';
       const impactIcon=finalDmg===0?'✨':defeat?'💔':'❤️';
-      const teamColor=defeat?'var(--danger)':G.teamPV<20?'#e08050':'var(--green)';
+      const teamColor=defeat?'var(--pv-red-text)':G.teamPV<20?'#e08050':'var(--pv-green-text)';
       const e1=document.createElement('div');e1.style.cssText='font-size:56px;margin-bottom:14px';e1.textContent=impactIcon;
-      const e2=document.createElement('div');e2.style.cssText='font-size:16px;color:#ccc;margin-bottom:6px';e2.textContent=finalDmg===0?'Aucun degat subi !':'L equipe encaisse';
+      const e2=document.createElement('div');e2.style.cssText='font-size:16px;color:var(--ov-text-mid);margin-bottom:6px';e2.textContent=finalDmg===0?'Aucun degat subi !':'L equipe encaisse';
       const e3=document.createElement('div');e3.style.cssText='font-family:var(--font-title);font-size:88px;color:'+impactColor+';line-height:1;margin-bottom:8px';e3.textContent=finalDmg===0?'0':'−'+finalDmg;
-      const e4=document.createElement('div');e4.style.cssText='font-size:14px;color:#888;margin-bottom:24px';e4.textContent='PV perdus';
+      const e4=document.createElement('div');e4.style.cssText='font-size:14px;color:var(--ov-text-faint);margin-bottom:24px';e4.textContent='PV perdus';
       // Team PV box
       const box=document.createElement('div');box.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;margin-bottom:28px;text-align:center';
       const bl=document.createElement('div');bl.style.cssText='font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px';bl.textContent='❤️ PV Equipe';
@@ -2045,14 +2045,14 @@ function showBossNonAtkOverlay(boss,bossAction){
   const content=document.getElementById('boss-overlay-content');
   content.innerHTML='';
   const isHeal=bossAction.type==='heal';
-  const color=isHeal?'var(--green)':'#9b7fe8';
+  const color=isHeal?'var(--ov-heal)':'#9b7fe8';
   const actIcon=isHeal?'💚':'🛡️';
   const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:10px';e1.textContent='💀';
-  const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--danger);letter-spacing:.08em;margin-bottom:20px';e2.textContent=boss.nom.toUpperCase();
+  const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--ov-boss-name);letter-spacing:.08em;margin-bottom:20px';e2.textContent=boss.nom.toUpperCase();
   const e3=document.createElement('div');e3.style.cssText='font-size:48px;margin-bottom:12px';e3.textContent=actIcon;
   const e4=document.createElement('div');e4.style.cssText='font-size:18px;font-weight:600;color:'+color+';margin-bottom:12px;text-align:center';e4.textContent=bossAction.desc;
   const e5=document.createElement('div');e5.style.cssText='font-family:var(--font-title);font-size:72px;color:'+color+';line-height:1;margin-bottom:6px';e5.textContent=(isHeal?'+':'')+bossAction.val;
-  const e6=document.createElement('div');e6.style.cssText='font-size:14px;color:#888;margin-bottom:32px';e6.textContent=isHeal?'PV recuperes':'PV de bouclier';
+  const e6=document.createElement('div');e6.style.cssText='font-size:14px;color:var(--ov-text-faint);margin-bottom:32px';e6.textContent=isHeal?'PV recuperes':'PV de bouclier';
   [e1,e2,e3,e4,e5,e6].forEach(el=>content.appendChild(el));
   btn.style.display='block';
   btn.className='boss-overlay-btn ok';
@@ -2067,7 +2067,7 @@ function showSpecialBossOverlay(boss,icon,color,title,subtitle){
   const content=document.getElementById('boss-overlay-content');
   content.innerHTML='';
   const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:10px';e1.textContent='💀';
-  const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--danger);letter-spacing:.08em;margin-bottom:20px';e2.textContent=boss.nom.toUpperCase();
+  const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--ov-boss-name);letter-spacing:.08em;margin-bottom:20px';e2.textContent=boss.nom.toUpperCase();
   const e3=document.createElement('div');e3.style.cssText='font-size:64px;margin-bottom:14px';e3.textContent=icon;
   const e4=document.createElement('div');e4.style.cssText='font-size:20px;font-weight:700;color:'+color+';margin-bottom:12px;text-align:center';e4.textContent=title;
   const e5=document.createElement('div');e5.style.cssText='font-size:14px;color:var(--muted);margin-bottom:32px;text-align:center';e5.textContent=subtitle;
