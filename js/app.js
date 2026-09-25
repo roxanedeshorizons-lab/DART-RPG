@@ -186,6 +186,8 @@ function applyTheme(theme){
   G.theme=theme==='dark'?'dark':'light';
   document.documentElement.setAttribute('data-theme',G.theme);
   renderThemeToggle();
+  renderCible();
+  renderLaboCible();
 }
 function toggleTheme(){
   const next=G.theme==='dark'?'light':'dark';
@@ -295,11 +297,13 @@ function laboRageCount(){
 
 function renderLaboCible(){
   const svgEl=document.getElementById('labo-cible-svg');
-  if(!svgEl)return;
+  if(!svgEl||!G.labo)return;
   const SECTORS=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
   const CX=200,CY=200;
   const R={bullseye:12,bull:30,tripleIn:105,tripleOut:120,doubleIn:172,doubleOut:190,numRing:202};
-  const NEUTRAL='#2a2a2a';
+  const isDark=G.theme==='dark';
+  const NEUTRAL=isDark?'#2a2a2a':'#c8c4bc';
+  const BOARD_BG=isDark?'#0a0a0a':'#e0ddd8';
 
   function darkenColor(hex,pct){
     const n=parseInt(hex.slice(1),16),f=1-pct/100;
@@ -325,7 +329,7 @@ function renderLaboCible(){
   }
 
   svgEl.innerHTML='';
-  svgEl.appendChild(mkEl('circle',{cx:CX,cy:CY,r:R.doubleOut+6,fill:'#0a0a0a'}));
+  svgEl.appendChild(mkEl('circle',{cx:CX,cy:CY,r:R.doubleOut+6,fill:BOARD_BG}));
 
   SECTORS.forEach((num,i)=>{
     const key=G.labo.sectors[num];
@@ -1347,7 +1351,9 @@ function renderCible(){
   const CX=200,CY=200;
   const R={bullseye:12,bull:30,tripleIn:105,tripleOut:120,doubleIn:172,doubleOut:190,numRing:202};
   const cfg=getCibleFor(G.selectedBoss)||null;
-  const NEUTRAL='#2a2a2a';
+  const isDark=G.theme==='dark';
+  const NEUTRAL=isDark?'#2a2a2a':'#c8c4bc';
+  const BOARD_BG=isDark?'#0a0a0a':'#e0ddd8';
   const BULL_COLOR='#1a5a1a',BS_COLOR='#5a0000';
   const rageSet=new Set(getBoss(G.selectedBoss).sectors.rage||[]);
 
@@ -1375,7 +1381,7 @@ function renderCible(){
   }
 
   svgEl.innerHTML='';
-  svgEl.appendChild(mkEl('circle',{cx:CX,cy:CY,r:R.doubleOut+6,fill:'#0a0a0a'}));
+  svgEl.appendChild(mkEl('circle',{cx:CX,cy:CY,r:R.doubleOut+6,fill:BOARD_BG}));
 
   SECTORS.forEach((num,i)=>{
     const c=cfg?cfg[num]:null;
