@@ -167,10 +167,10 @@ body{font-family:var(--font-body);background:var(--bg);display:flex;justify-cont
 .cible-toggle-btn{width:100%;height:28px;border-radius:9px;background:transparent;border:1px solid var(--border);font-family:var(--font-body);font-size:11px;color:var(--dim);cursor:pointer;margin-bottom:5px;}
 
 /* BOSS ATTACK OVERLAY */
-.boss-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 24px 0;background:var(--ov-bg);overflow-y:auto;}
+.boss-overlay{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;height:100dvh;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 24px 0;background:var(--ov-bg);overflow-y:auto;}
 .boss-overlay.active{display:flex;}
 .boss-overlay.team-attack-phase{background:var(--ov-bg-team-phase);}
-.overlay-footer{position:sticky;bottom:0;left:0;right:0;background:var(--ov-bg);padding-bottom:16px;flex-shrink:0;}
+.overlay-footer{position:sticky;bottom:0;left:0;right:0;margin-top:auto;background:var(--ov-bg);padding-bottom:16px;flex-shrink:0;}
 @keyframes goldFlash{0%{color:var(--gold)}40%{color:#fff8c0;text-shadow:0 0 16px #ffd700,0 0 32px #ffd70088}100%{color:var(--gold)}}
 @keyframes bounce{0%,100%{transform:translateY(0);}40%{transform:translateY(-18px);}70%{transform:translateY(-8px);}}
 @keyframes fall{0%{transform:translateY(-40px);opacity:1;}100%{transform:translateY(110vh);opacity:0;}}
@@ -209,7 +209,7 @@ body{font-family:var(--font-body);background:var(--bg);display:flex;justify-cont
 @keyframes dmgPop{0%{transform:scale(0.6);opacity:0;}60%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
 .boss-dmg-label{font-size:13px;color:var(--ov-sublabel);margin-bottom:24px;}
 .boss-overlay-result{font-size:13px;color:var(--muted);margin-bottom:24px;text-align:center;}
-.boss-overlay-btn{width:100%;height:50px;border-radius:13px;background:var(--danger);border:none;font-family:var(--font-body);font-size:15px;font-weight:600;color:#fff;cursor:pointer;position:sticky;bottom:0;flex-shrink:0;margin-bottom:16px;}
+.boss-overlay-btn{width:100%;height:50px;border-radius:13px;background:var(--danger);border:none;font-family:var(--font-body);font-size:15px;font-weight:600;color:#fff;cursor:pointer;position:sticky;bottom:0;margin-top:auto;flex-shrink:0;margin-bottom:16px;}
 .boss-overlay-btn.ok{background:var(--gold);color:var(--on-gold);}
 
 /* END */
