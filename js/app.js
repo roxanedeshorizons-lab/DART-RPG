@@ -1025,8 +1025,10 @@ function dartPress(v){
     renderEffectsMini();
   }
   if(aef.type==='fire'){
+    console.log('FIRE dartPress - stacks avant:', G.effects.fire.stacks);
     G.effects.fire.stacks+=aef.val;
     G.effects.fire.dur=2;
+    console.log('FIRE dartPress - stacks après:', G.effects.fire.stacks);
     const dps=G.effects.fire.dmgPerStack||3;
     updatePVBars();
     addFeedItem({icon:'🔥',text:(G.players[G.currentPlayer]?.name||'')+' — Feu'+(isGolden?' 🎯':''),val:'🔥'.repeat(G.effects.fire.stacks)+' — '+(G.effects.fire.stacks*dps)+' PV/manche',fc:'feu'});
@@ -2084,6 +2086,7 @@ function showSpecialBossOverlay(boss,icon,color,title,subtitle){
 // Le boss vient d'agir : nouvelle manche, tous les joueurs repartent a zero ensemble
 function endRound(bossDmg){
   renderEffectsMini();
+  console.log('FIRE endRound - stacks:', G.effects.fire.stacks, 'dmgPerStack:', G.effects.fire.dmgPerStack, 'dur:', G.effects.fire.dur);
 
   // Appliquer les dégâts de feu sur le boss
   if(G.effects.fire.stacks > 0){
