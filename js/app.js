@@ -1026,10 +1026,8 @@ function dartPress(v){
     renderEffectsMini();
   }
   if(aef.type==='fire'){
-    console.log('FIRE dartPress - stacks avant:', G.effects.fire.stacks);
     G.effects.fire.stacks+=aef.val;
     G.effects.fire.dur=2;
-    console.log('FIRE dartPress - stacks après:', G.effects.fire.stacks);
     const dps=G.effects.fire.dmgPerStack||3;
     updatePVBars();
     addFeedItem({icon:'🔥',text:(G.players[G.currentPlayer]?.name||'')+' — Feu'+(isGolden?' 🎯':''),val:'🔥'.repeat(G.effects.fire.stacks)+' — '+(G.effects.fire.stacks*dps)+' PV/manche',fc:'feu'});
@@ -1154,57 +1152,7 @@ document.addEventListener('click',function(e){
   }
 });
 
-function replayDartsFromZero(){
-  const darts = Array.isArray(DI.darts) ? DI.darts.filter(Boolean) : [];
-  const startBossPV = G.bossPVRoundStart ?? G.bossPVMax;
-  const startTeamPV = G.teamPVAtRoundStart ?? G.teamPVMax;
-  const currentArmor = G.armorAtRoundStart ?? 0;
-  const currentShield = G.shieldAtRoundStart ?? 0;
-  G.bossPV = startBossPV;
-  G.teamPV = startTeamPV;
-  G.effects = {
-    shield:currentShield,shieldDur:0,dodge:0,dodgeCharges:0,
-    fire:{stacks:0,dur:0,dmgPerStack:3},
-    teamFire:0,armor:currentArmor
-  };
-  G.goldenDartsRemaining = 0;
-  G.rage = {has1:false,has2:false};
-
-  for(const dart of darts){
-    const ef = dart && dart.ef ? dart.ef : {};
-    const ad = dart && dart.ad ? dart.ad : {feedClass:'neutral'};
-    if(ef.type === 'atk'){
-      const dmg = Number.isFinite(dart.actualDmg) ? dart.actualDmg : Math.round((ef.val || 0) * (dart.golden ? 1.3 : 1));
-      G.bossPV = Math.max(0, G.bossPV - dmg);
-    }
-    if(ef.type === 'heal_team') G.teamPV = Math.min(G.teamPVMax, G.teamPV + (ef.val || 0));
-    if(ef.type === 'fire'){
-      G.effects.fire.stacks += Number(ef.val || 0);
-      if(G.effects.fire.stacks > 0) G.effects.fire.dur = 2;
-    }
-    if(ef.type === 'shield') G.effects.shield = (G.effects.shield || 0) + (ef.val || 0);
-    if(ef.type === 'dodge') G.effects.dodge = 1.0;
-    if(ef.type === 'dodge_charge'){
-      const nextCharges = Math.min(3, (G.effects.dodgeCharges || 0) + (ef.val || 0));
-      G.effects.dodgeCharges = nextCharges;
-      if(nextCharges >= 3){G.effects.dodge = 1.0; G.effects.dodgeCharges = 0;}
-    }
-    if(ef.type === 'cancel_teamfire') G.effects.teamFire = 0;
-    if(ef.type === 'bull_miroir'){
-      if(ef.fire){ G.effects.fire.stacks = ef.prevStacks || 0; }
-      else { G.bossPV = Math.max(0, G.bossPV - 20); }
-    }
-    if(ef.type === 'brise') G.effects.armor = Math.max(0, G.effects.armor - (dart.actualArmorRemoved || 0));
-    if(ef.bonus && ef.bonus.type === 'heal_team') G.teamPV = Math.min(G.teamPVMax, G.teamPV + (ef.bonus.val || 0));
-    if(ef.bonus && ef.bonus.type === 'atk') G.bossPV = Math.max(0, G.bossPV - (ef.bonus.val || 0));
-    if(ad && ad.feedClass) {
-      // aucune mutation des objets de DI.darts ; on garde leur structure d'origine intacte
-    }
-  }
-}
-
 function undoLastDart(){
-  console.log('undoLastDart appelé, darts:', DI.darts.length, 'inputLocked:', G.inputLocked);
   if(G.isUndoing || G.screen !== 'game' || DI.darts.length === 0) return;
   G.isUndoing = true;
   G.inputLocked = false;
@@ -1217,7 +1165,7 @@ function undoLastDart(){
   const lastAction=document.getElementById('last-action-text');
   if(lastAction) lastAction.textContent = G.liveFeed.length ? `${G.liveFeed[G.liveFeed.length-1].icon}  ${G.liveFeed[G.liveFeed.length-1].text}${G.liveFeed[G.liveFeed.length-1].val?' — '+G.liveFeed[G.liveFeed.length-1].val:''}` : '—';
 
-  replayDartsFromZero();
+  rebuildRoundStateFromCurrentDarts();
 
   if(last && last.golden) G.goldenDartsRemaining = Math.min(3, (G.goldenDartsRemaining || 0) + 1);
   G.isUndoing = false;
