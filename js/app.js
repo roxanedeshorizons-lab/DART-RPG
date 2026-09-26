@@ -1785,34 +1785,6 @@ function validateRound(){
 
   const boss=getBoss(G.selectedBoss);
 
-  console.log('validateRound - fire stacks:', G.effects.fire.stacks, 'dur:', G.effects.fire.dur);
-
-  // Appliquer les dégâts de feu sur le boss
-  if(G.effects.fire.stacks > 0){
-    const fireDmg = G.effects.fire.stacks * (G.effects.fire.dmgPerStack || 3);
-    G.bossPV = Math.max(0, G.bossPV - fireDmg);
-    G.stats.totalDmg += fireDmg;
-    if(fireDmg > G.stats.biggestHit) G.stats.biggestHit = fireDmg;
-    addFeedItem({icon:'🔥',text:'Feu — dégâts sur le boss',val:'−'+fireDmg+' PV',fc:'feu'});
-    updatePVBars();
-    G.effects.fire.dur = Math.max(0, G.effects.fire.dur - 1);
-    if(G.effects.fire.dur <= 0){
-      G.effects.fire.stacks = 0;
-      G.effects.fire.dmgPerStack = 3;
-    }
-    if(G.bossPV <= 0){ setTimeout(()=>showEnd(true), 400); return; }
-  }
-
-  // Appliquer les dégâts de feu ennemi sur l'équipe
-  if((G.effects.teamFire || 0) > 0){
-    const teamFireDmg = G.effects.teamFire * 8;
-    G.teamPV = Math.max(0, G.teamPV - teamFireDmg);
-    G.stats.totalDmgTaken += teamFireDmg;
-    addFeedItem({icon:'🔥',text:'Feu ennemi — dégâts équipe',val:'−'+teamFireDmg+' PV',fc:'feu'});
-    updatePVBars();
-    if(G.teamPV <= 0){ setTimeout(()=>showEnd(false), 400); return; }
-  }
-
   renderEffectsMini();
 
   const teamCards=[];
@@ -2114,6 +2086,36 @@ function showSpecialBossOverlay(boss,icon,color,title,subtitle){
 // Le boss vient d'agir : nouvelle manche, tous les joueurs repartent a zero ensemble
 function endRound(bossDmg){
   renderEffectsMini();
+  console.log('FIRE endRound - stacks:', G.effects.fire.stacks, 'dmgPerStack:', G.effects.fire.dmgPerStack, 'dur:', G.effects.fire.dur);
+
+  // Appliquer les dégâts de feu sur le boss
+  if(G.effects.fire.stacks > 0){
+    const fireDmg = G.effects.fire.stacks * (G.effects.fire.dmgPerStack || 3);
+    G.bossPV = Math.max(0, G.bossPV - fireDmg);
+    G.stats.totalDmg += fireDmg;
+    if(fireDmg > G.stats.biggestHit) G.stats.biggestHit = fireDmg;
+    addFeedItem({icon:'🔥',text:'Feu — dégâts sur le boss',val:'−'+fireDmg+' PV',fc:'feu'});
+    updatePVBars();
+    // Décrémenter la durée, réinitialiser si expirée
+    G.effects.fire.dur = Math.max(0, G.effects.fire.dur - 1);
+    if(G.effects.fire.dur <= 0){
+      G.effects.fire.stacks = 0;
+      G.effects.fire.dmgPerStack = 3;
+    }
+  }
+
+  // Appliquer les dégâts de feu ennemi sur l'équipe
+  if((G.effects.teamFire || 0) > 0){
+    const teamFireDmg = G.effects.teamFire * 8;
+    G.teamPV = Math.max(0, G.teamPV - teamFireDmg);
+    G.stats.totalDmgTaken += teamFireDmg;
+    addFeedItem({icon:'🔥',text:'Feu ennemi — dégâts équipe',val:'−'+teamFireDmg+' PV',fc:'feu'});
+    updatePVBars();
+  }
+
+  // Vérifier victoire/défaite après les dégâts de feu
+  if(G.bossPV <= 0){ setTimeout(()=>showEnd(true), 400); return; }
+  if(G.teamPV <= 0){ setTimeout(()=>showEnd(false), 400); return; }
 
   G.manche++;
   G.bossPVRoundStart = G.bossPV;
