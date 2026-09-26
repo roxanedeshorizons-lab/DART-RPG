@@ -679,7 +679,8 @@ let G={
   inventory:[],inventorySlots:3,
   activeBoostNext:false,activeResurr:false,activeBouclierItem:false,
   inputLocked:false,isUndoing:false,playerEditor:null,secretTaps:0,xavierTaps:0,
-  bossPVRoundStart:0,teamPVAtRoundStart:0,shieldAtRoundStart:0,
+  bossPVRoundStart:0,teamPVAtRoundStart:0,shieldAtRoundStart:0,armorAtRoundStart:0,
+  fireAtRoundStart:{stacks:0,dur:0,dmgPerStack:3},
   // rage tracking for current round: has1/has2 = whether each rage sector was hit this manche
   rage:{has1:false,has2:false},
   customBosses:[],bossOverrides:{},labo:null,
@@ -1466,6 +1467,7 @@ function renderGameUI(){
   G.scores=G.players.map(()=>null);G.currentPlayer=0;
   G._playerDarts=[];G.liveFeed=[];G.inputLocked=false;G.isUndoing=false;setGridLocked(false);lastDartTime=0;
   G.bossPVRoundStart=G.bossPV;G.teamPVAtRoundStart=G.teamPV;
+  G.fireAtRoundStart={stacks:0,dur:0,dmgPerStack:3};
   G.rage={has1:false,has2:false};
   const feedEl=document.getElementById('live-feed');
   if(feedEl)feedEl.innerHTML='';
@@ -1562,11 +1564,12 @@ function rebuildRoundStateFromCurrentDarts(){
   const startTeamPV = G.teamPVAtRoundStart ?? G.teamPVMax;
   const currentArmor = G.armorAtRoundStart ?? 0;
   const currentShield = G.shieldAtRoundStart ?? 0;
+  const startFire = G.fireAtRoundStart || {stacks:0,dur:0,dmgPerStack:3};
   G.bossPV = startBossPV;
   G.teamPV = startTeamPV;
   G.effects = {
     shield:currentShield,shieldDur:0,dodge:0,dodgeCharges:0,
-    fire:{stacks:0,dur:0,dmgPerStack:3},
+    fire:{stacks:startFire.stacks,dur:startFire.dur,dmgPerStack:startFire.dmgPerStack||3},
     teamFire:0,armor:currentArmor
   };
   G.goldenDartsRemaining = 0;
@@ -2096,36 +2099,9 @@ function showSpecialBossOverlay(boss,icon,color,title,subtitle){
 // Le boss vient d'agir : nouvelle manche, tous les joueurs repartent a zero ensemble
 function endRound(bossDmg){
   renderEffectsMini();
-  console.log('FIRE endRound - stacks:', G.effects.fire.stacks, 'dmgPerStack:', G.effects.fire.dmgPerStack, 'dur:', G.effects.fire.dur);
 
-  // Appliquer les dégâts de feu sur le boss
-  if(G.effects.fire.stacks > 0){
-    const fireDmg = G.effects.fire.stacks * (G.effects.fire.dmgPerStack || 3);
-    G.bossPV = Math.max(0, G.bossPV - fireDmg);
-    G.stats.totalDmg += fireDmg;
-    if(fireDmg > G.stats.biggestHit) G.stats.biggestHit = fireDmg;
-    addFeedItem({icon:'🔥',text:'Feu — dégâts sur le boss',val:'−'+fireDmg+' PV',fc:'feu'});
-    updatePVBars();
-    // Décrémenter la durée, réinitialiser si expirée
-    G.effects.fire.dur = Math.max(0, G.effects.fire.dur - 1);
-    if(G.effects.fire.dur <= 0){
-      G.effects.fire.stacks = 0;
-      G.effects.fire.dmgPerStack = 3;
-    }
-  }
-
-  // Appliquer les dégâts de feu ennemi sur l'équipe
-  if((G.effects.teamFire || 0) > 0){
-    const teamFireDmg = G.effects.teamFire * 8;
-    G.teamPV = Math.max(0, G.teamPV - teamFireDmg);
-    G.stats.totalDmgTaken += teamFireDmg;
-    addFeedItem({icon:'🔥',text:'Feu ennemi — dégâts équipe',val:'−'+teamFireDmg+' PV',fc:'feu'});
-    updatePVBars();
-  }
-
-  // Vérifier victoire/défaite après les dégâts de feu
-  if(G.bossPV <= 0){ setTimeout(()=>showEnd(true), 400); return; }
-  if(G.teamPV <= 0){ setTimeout(()=>showEnd(false), 400); return; }
+  // Sauvegarder l'état du feu boss pour la manche suivante (carry-over)
+  G.fireAtRoundStart = {stacks:G.effects.fire.stacks, dur:G.effects.fire.dur, dmgPerStack:G.effects.fire.dmgPerStack||3};
 
   G.manche++;
   G.bossPVRoundStart = G.bossPV;
