@@ -1785,6 +1785,16 @@ function validateRound(){
 
   const boss=getBoss(G.selectedBoss);
 
+  // Appliquer les dégâts de feu sur le boss
+  if(G.effects.fire.stacks > 0){
+    const fireDmg = G.effects.fire.stacks * (G.effects.fire.dmgPerStack || 3);
+    G.bossPV = Math.max(0, G.bossPV - fireDmg);
+    G.stats.totalDmg += fireDmg;
+    addFeedItem({icon:'🔥', text:`Feu — ${G.effects.fire.stacks} stack(s)`, val:`−${fireDmg} PV boss`, fc:'feu'});
+    G.effects.fire.dur--;
+    if(G.effects.fire.dur <= 0){ G.effects.fire.stacks = 0; G.effects.fire.dur = 0; }
+  }
+
   renderEffectsMini();
 
   const teamCards=[];
