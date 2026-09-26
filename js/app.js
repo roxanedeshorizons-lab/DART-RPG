@@ -2062,6 +2062,7 @@ function endRound(bossDmg){
   G.currentPlayer = 0;
   G.playerEditor = null;
   DI = {mod:1,darts:[]};
+  G._playerDarts = [];
   G.goldenDartsRemaining = 0;
   G.inputLocked = false;
   setGridLocked(false);
