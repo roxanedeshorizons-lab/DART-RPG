@@ -673,7 +673,8 @@ let G={
   screen:'home',selectedBoss:0,
   players:[{name:'Joueur 1',color:'#1a2a4a'},{name:'Joueur 2',color:'#2a1a4a'}],
   teamPV:0,teamPVMax:0,bossPV:0,bossPVMax:0,
-  manche:1,scores:[],currentPlayer:0,_playerDarts:[],
+  manche:1,currentPlayer:0,
+  turnQueue:[0,1],turnIndex:0,cycleStart:0,slotDarts:[[],[]],slotDone:[false,false],
   effects:{shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0},
   goldenDartsRemaining:0,bossShield:0,liveFeed:[],finalScore:0,
   inventory:[],inventorySlots:3,
@@ -884,13 +885,30 @@ function addP(){
   renderHome();
 }
 
+// Toujours 2 tours joues avant l'attaque du boss, quel que soit le nombre de joueurs.
+// La file boucle sur les joueurs ; en solo le meme joueur y figure deux fois.
+function buildTurnQueue(nbPlayers){
+  if(nbPlayers===1)return[0,0];
+  if(nbPlayers===2)return[0,1];
+  if(nbPlayers===3)return[0,1,2];
+  if(nbPlayers===4)return[0,1,2,3];
+}
+// Slot 0/1 = position dans le cycle de 2 tours en cours. -1 si les deux tours sont joues (en attente de validation).
+function activeSlot(){
+  if(!G.slotDone[0])return 0;
+  if(!G.slotDone[1])return 1;
+  return -1;
+}
+
 function startGame(){
   document.querySelectorAll('.player-name-inp').forEach((inp,i)=>{if(G.players[i])G.players[i].name=inp.value||`Joueur ${i+1}`;});
   const boss=getBoss(G.selectedBoss);
   G.teamPV=boss.teamPV;G.teamPVMax=boss.teamPV;
   G.bossPV=boss.pv;G.bossPVMax=boss.pv;
-  G.manche=1;G.scores=G.players.map(()=>null);G.currentPlayer=0;
-  G._playerDarts=[];G.liveFeed=[];
+  G.manche=1;
+  G.turnQueue=buildTurnQueue(G.players.length);
+  G.turnIndex=0;
+  G.liveFeed=[];
   G.effects={shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0};
   G.goldenDartsRemaining=0;
   G.activeBoostNext=false;G.activeResurr=false;G.activeBouclierItem=false;
@@ -944,7 +962,9 @@ function dartPress(v){
   const now=Date.now();
   if(now-lastDartTime<80)return;
   lastDartTime=now;
-  if(G.scores[G.currentPlayer]!==null)return;
+  const _as=activeSlot();
+  if(_as===-1)return;
+  G.currentPlayer=G.turnQueue[(G.cycleStart+_as)%G.turnQueue.length];
   const maxDarts=G.goldenDartsRemaining>0?6:3;
   if(DI.darts.length>=maxDarts)return;
   const m=DI.mod;
@@ -1192,28 +1212,30 @@ function removeLast(){
 // Le bouton "Valider la manche" ne s'active que lorsque TOUS les joueurs ont joue leurs flechettes
 function confirmP(){
   if(G.isUndoing)return;
-  const allDone=G.scores.every(s=>s!==null);
+  const allDone=G.slotDone[0]&&G.slotDone[1];
   const btn=document.getElementById('confirm-btn');
   if(btn){btn.disabled=!allDone;btn.style.opacity=allDone?'1':'.5';}
   renderStrip();
 }
 
-// Verrouille les flechettes du joueur courant des qu'il a fini son tour, puis passe
-// automatiquement au joueur suivant qui n'a pas encore joue (sans attaque du boss entre les deux) —
-// la manche n'est validee et le boss n'attaque qu'une fois TOUS les joueurs verrouilles.
+// Verrouille les flechettes du slot en cours des qu'il a fini son tour, puis passe
+// automatiquement au 2e slot du cycle (sans attaque du boss entre les deux) —
+// la manche n'est validee et le boss n'attaque qu'une fois les 2 tours du cycle verrouilles.
 function finishPlayerTurn(){
   if(G.isUndoing)return;
-  const cp=G.currentPlayer;
-  if(G.scores[cp]!==null)return;
+  const slot=activeSlot();
+  if(slot===-1)return;
   const maxDarts=G.goldenDartsRemaining>0?6:3;
   if(DI.darts.length<maxDarts)return;
 
-  G._playerDarts[cp]=[...DI.darts];
-  G.scores[cp]=cp;
+  G.slotDarts[slot]=[...DI.darts];
+  G.slotDone[slot]=true;
 
-  const nextPlayer=G.players.findIndex((_,idx)=>idx!==cp&&G.scores[idx]===null);
-  if(nextPlayer!==-1){
-    G.currentPlayer=nextPlayer;
+  G.turnIndex++;
+  if(G.turnIndex>=G.turnQueue.length)G.turnIndex=0;
+
+  if(slot===0){
+    G.currentPlayer=G.turnQueue[G.turnIndex];
     DI={mod:1,darts:[]};
     G.goldenDartsRemaining=0;
     G.inputLocked=false;
@@ -1227,13 +1249,13 @@ function finishPlayerTurn(){
   renderStrip();
 }
 
-function removeActiveDart(playerIndex, dartIndex){
-  if(G.screen !== 'game' || G.currentPlayer !== playerIndex || G.scores[playerIndex] !== null) return;
+function removeActiveDart(slot, dartIndex){
+  if(G.screen !== 'game' || activeSlot() !== slot) return;
   if(!Array.isArray(DI.darts)) return;
   const remaining=[...DI.darts];
   remaining.splice(dartIndex,1);
   DI.darts=remaining;
-  G._playerDarts[playerIndex]=[...remaining];
+  G.slotDarts[slot]=[...remaining];
   G.inputLocked=false;
   setGridLocked(false);
   G.playerEditor=null;
@@ -1246,12 +1268,11 @@ function removeActiveDart(playerIndex, dartIndex){
 }
 
 function undoLastP(){
-  if(!G._playerDarts)return;
   let last=-1;
-  for(let i=G.players.length-1;i>=0;i--){if(G.scores[i]!==null){last=i;break;}}
+  if(G.slotDone[1])last=1; else if(G.slotDone[0])last=0;
   if(last===-1)return;
   // Revert PV
-  const darts=G._playerDarts[last]||[];
+  const darts=G.slotDarts[last]||[];
   const rageMulti=computeRageMulti();
   darts.forEach(d=>{
     if(d.ef.type==='atk')G.bossPV=Math.min(G.bossPVMax,G.bossPV+Math.round(d.ef.val*rageMulti));
@@ -1268,8 +1289,9 @@ function undoLastP(){
     const el=document.getElementById('live-feed');
     if(el&&el.lastChild)el.removeChild(el.lastChild);
   });
-  G.scores[last]=null;G.currentPlayer=last;G.inputLocked=false;setGridLocked(false);lastDartTime=0;
-  DI.darts=[...darts];G._playerDarts[last]=[];
+  G.slotDone[last]=false;G.turnIndex=(G.cycleStart+last)%G.turnQueue.length;G.currentPlayer=G.turnQueue[G.turnIndex];
+  G.inputLocked=false;setGridLocked(false);lastDartTime=0;
+  DI.darts=[...darts];G.slotDarts[last]=[];
   const btn=document.getElementById('confirm-btn');
   if(btn){btn.disabled=true;btn.style.opacity='.5';}
   renderMiniRefBar();
@@ -1422,8 +1444,11 @@ function renderGameUI(){
   G.armorAtRoundStart=G.effects.armor||0;
   G.shieldAtRoundStart=G.effects.shield||0;
   G.rawDmgThisRound=0;
-  G.scores=G.players.map(()=>null);G.currentPlayer=0;
-  G._playerDarts=[];G.liveFeed=[];G.inputLocked=false;G.isUndoing=false;setGridLocked(false);lastDartTime=0;
+  G.cycleStart=G.turnIndex;
+  G.slotDarts=[[],[]];
+  G.slotDone=[false,false];
+  G.currentPlayer=G.turnQueue[G.cycleStart];
+  G.liveFeed=[];G.inputLocked=false;G.isUndoing=false;setGridLocked(false);lastDartTime=0;
   G.bossPVRoundStart=G.bossPV;G.teamPVAtRoundStart=G.teamPV;
   G.fireAtRoundStart={stacks:0,dur:0,dmgPerStack:3};
   G.rage={has1:false,has2:false};
@@ -1534,8 +1559,9 @@ function rebuildRoundStateFromCurrentDarts(){
   G.rage = {has1:false,has2:false};
 
   const allDarts=[];
-  G.players.forEach((_,idx)=>{
-    const source = idx === G.currentPlayer ? DI.darts : (G._playerDarts && G._playerDarts[idx] ? G._playerDarts[idx] : []);
+  const _as=activeSlot();
+  [0,1].forEach(slot=>{
+    const source = slot === _as ? DI.darts : (G.slotDarts && G.slotDarts[slot] ? G.slotDarts[slot] : []);
     if(Array.isArray(source)) allDarts.push(...source);
   });
 
@@ -1569,12 +1595,12 @@ function rebuildRoundStateFromCurrentDarts(){
   }
 }
 
-function openPlayerEditMenu(playerIndex){
+function openPlayerEditMenu(slot){
   if(G.screen !== 'game') return;
-  const isActive = G.currentPlayer === playerIndex && G.scores[playerIndex] === null;
-  const darts = isActive ? DI.darts : G._playerDarts[playerIndex];
+  const isActive = activeSlot() === slot;
+  const darts = isActive ? DI.darts : G.slotDarts[slot];
   if(!Array.isArray(darts) || darts.length < 3) return;
-  G.playerEditor = playerIndex;
+  G.playerEditor = slot;
   renderStrip();
 }
 
@@ -1583,15 +1609,15 @@ function closePlayerEditMenu(){
   renderStrip();
 }
 
-function removePlayerDart(playerIndex, dartIndex){
+function removePlayerDart(slot, dartIndex){
   if(G.screen !== 'game') return;
 
-  if(playerIndex === G.currentPlayer && G.scores[playerIndex] === null){
+  if(slot === activeSlot()){
     if(!Array.isArray(DI.darts)) return;
     const remaining=[...DI.darts];
     remaining.splice(dartIndex,1);
     DI.darts=remaining;
-    G._playerDarts[playerIndex]=[...remaining];
+    G.slotDarts[slot]=[...remaining];
     G.playerEditor=null;
     G.inputLocked=false;
     setGridLocked(false);
@@ -1604,13 +1630,14 @@ function removePlayerDart(playerIndex, dartIndex){
     return;
   }
 
-  if(!G._playerDarts || !G._playerDarts[playerIndex]) return;
-  const remaining=[...G._playerDarts[playerIndex]];
+  if(!G.slotDarts || !G.slotDarts[slot]) return;
+  const remaining=[...G.slotDarts[slot]];
   remaining.splice(dartIndex,1);
 
-  G._playerDarts[playerIndex]=remaining;
-  G.scores[playerIndex]=null;
-  G.currentPlayer=playerIndex;
+  G.slotDarts[slot]=remaining;
+  G.slotDone[slot]=false;
+  G.turnIndex=(G.cycleStart+slot)%G.turnQueue.length;
+  G.currentPlayer=G.turnQueue[G.turnIndex];
   DI.darts=[...remaining];
   G.inputLocked=false;
   setGridLocked(false);
@@ -1623,14 +1650,15 @@ function removePlayerDart(playerIndex, dartIndex){
   renderStrip();
 }
 
-// Construit la ligne HTML d'un seul joueur (utilise pour afficher tous les joueurs en meme temps)
-function renderPlayerRowHtml(i){
-  const p=G.players[i];
+// Construit la ligne HTML d'un slot du cycle en cours (2 slots toujours affiches — en solo, meme joueur x2)
+function renderPlayerRowHtml(slot){
+  const playerIdx=G.turnQueue[(G.cycleStart+slot)%G.turnQueue.length];
+  const p=G.players[playerIdx];
   if(!p)return '';
 
-  const done=G.scores[i]!==null;
-  const active=i===G.currentPlayer&&!done;
-  const darts=active?DI.darts:(done&&G._playerDarts[i]?G._playerDarts[i]:[]);
+  const done=G.slotDone[slot];
+  const active=slot===activeSlot();
+  const darts=active?DI.darts:(done&&G.slotDarts[slot]?G.slotDarts[slot]:[]);
   const totalSlots=active&&darts.length>3?darts.length:3;
   const showActiveEditButton = G.screen === 'game' && Array.isArray(darts) && darts.length >= 3;
   const slots=Array.from({length:totalSlots},(_,j)=>{
@@ -1647,12 +1675,12 @@ function renderPlayerRowHtml(i){
     return `<div class="p-slot" style="background:var(--bg);color:#111">—</div>`;
   }).join('');
 
-  const popup = G.playerEditor === i && Array.isArray(darts) && darts.length >= 3 ? `
+  const popup = G.playerEditor === slot && Array.isArray(darts) && darts.length >= 3 ? `
     <div class="player-edit-popup" style="display:flex;align-items:flex-end;gap:8px;padding:6px 8px;margin:0 0 6px 0;background:var(--popup-bg);border:1px solid var(--popup-border);border-radius:9px;box-shadow:0 10px 20px rgba(0,0,0,.25);max-width:100%;overflow-x:auto;white-space:nowrap;position:relative;">
       ${darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:7px;">
         <span style="font-size:14px;line-height:1">${d.dartIcon||'•'}</span>
         <span style="font-size:11px;color:var(--card-text);line-height:1.1">${d.label||''}</span>
-        <button onclick="removePlayerDart(${i},${idx});event.stopPropagation();" style="background:transparent;border:1px solid var(--x-border);color:var(--x-color);border-radius:5px;cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;font-size:11px;line-height:1">✕</button>
+        <button onclick="removePlayerDart(${slot},${idx});event.stopPropagation();" style="background:transparent;border:1px solid var(--x-border);color:var(--x-color);border-radius:5px;cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0;font-size:11px;line-height:1">✕</button>
       </div>`).join('')}
     </div>
   ` : '';
@@ -1663,21 +1691,21 @@ function renderPlayerRowHtml(i){
       <div class="p-av" style="background:${p.color};color:#fff">${ini(p.name)}</div>
       <div class="p-nm" style="display:flex;align-items:center;gap:8px;position:relative;flex:1;min-width:0">
         <span>${p.name}</span>
-        ${showActiveEditButton ? `<button class="player-edit-btn" onclick="event.stopPropagation();openPlayerEditMenu(${i});" style="background:var(--edit-btn-bg);border:1px solid var(--edit-btn-border);border-radius:8px;padding:2px 6px;color:var(--edit-btn-color);cursor:pointer;font-size:12px;line-height:1.2">✏️</button>` : ''}
+        ${showActiveEditButton ? `<button class="player-edit-btn" onclick="event.stopPropagation();openPlayerEditMenu(${slot});" style="background:var(--edit-btn-bg);border:1px solid var(--edit-btn-border);border-radius:8px;padding:2px 6px;color:var(--edit-btn-color);cursor:pointer;font-size:12px;line-height:1.2">✏️</button>` : ''}
       </div>
       <div class="p-slots" style="flex-wrap:wrap;display:flex;gap:4px;justify-content:flex-end;flex:1;min-width:0">${slots}</div>
     </div>
   </div>`;
 }
 
-// Affiche tous les joueurs en meme temps dans la bande joueurs (chacun garde ses flechettes visibles)
+// Affiche les 2 joueurs du cycle en cours (positions turnQueue[cycleStart] / [cycleStart+1])
 function renderStrip(){
   const el=document.getElementById('players-strip');if(!el)return;
-  el.innerHTML = G.players.map((_,i)=>renderPlayerRowHtml(i)).join('');
+  el.innerHTML = [0,1].map(slot=>renderPlayerRowHtml(slot)).join('');
 
   const gb=document.getElementById('golden-banner');
   if(gb){
-    if(G.goldenDartsRemaining>0&&G.currentPlayer<G.players.length){
+    if(G.goldenDartsRemaining>0&&activeSlot()!==-1){
       gb.style.display='block';
       gb.textContent='🎯 Flechettes dorees — '+G.goldenDartsRemaining+' restante'+(G.goldenDartsRemaining>1?'s':'')+' — effets x1.3';
     } else {
@@ -1742,7 +1770,7 @@ function validateRound(){
   if(G.isUndoing || G.screen !== 'game') return;
   // Un seul recap pour tous les joueurs : on attend que chacun ait lance ses 3 flechettes
   // (le verrouillage par joueur se fait des que ses 3 flechettes sont jouees, voir finishPlayerTurn())
-  if(!G.scores.every(s=>s!==null)) return;
+  if(!(G.slotDone[0]&&G.slotDone[1])) return;
 
   const boss=getBoss(G.selectedBoss);
 
@@ -2098,11 +2126,12 @@ function endRound(bossDmg){
   G.shieldAtRoundStart = G.effects.shield || 0;
   G.rawDmgThisRound = 0;
 
-  G.scores = G.players.map(()=>null);
-  G.currentPlayer = 0;
+  G.cycleStart = G.turnIndex;
+  G.slotDarts = [[], []];
+  G.slotDone = [false, false];
+  G.currentPlayer = G.turnQueue[G.cycleStart];
   G.playerEditor = null;
   DI = {mod:1,darts:[]};
-  G._playerDarts = [];
   G.goldenDartsRemaining = 0;
   G.inputLocked = false;
   setGridLocked(false);
