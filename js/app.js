@@ -1784,162 +1784,175 @@ function validateRound(){
   const bossAction=boss.pattern[patternIndex];
 
   const launchBossOverlay=()=>{
-    if(bossAction.type==='armorUp'){
-      G.effects.armor=Math.min(4,G.effects.armor+bossAction.val);
-      renderEffectsMini();
-      const ar=G.effects.armor;
-      addFeedItem({icon:'🛡️',text:boss.nom+' — Armure',val:'🛡️'.repeat(ar)+' −'+(ar*20)+'% dégâts',fc:'shield'});
-      const subtitles=['','Vos attaques sont réduites de 20%','Vos attaques sont réduites de 40%','Vos attaques sont réduites de 60%','Vos attaques sont réduites de 80% — Brisez ses boucliers !'];
-      showSpecialBossOverlay(boss,'🛡️🛡️','#e8a030',`Le boss gagne ${bossAction.val} bouclier(s) !`,subtitles[ar]||'');
-      return;
-    }
-    if(bossAction.type==='fireDot'){
-      G.effects.teamFire=(G.effects.teamFire||0)+1;
-      renderEffectsMini();
-      addFeedItem({icon:'🔥',text:boss.nom+' — Feu ennemi',val:'🔥'.repeat(G.effects.teamFire)+' actif',fc:'feu'});
-      showSpecialBossOverlay(boss,'🔥','#c84020',bossAction.desc||boss.nom+' vous embrase !','🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV par manche (cumulable)');
-      return;
-    }
-    if(bossAction.type==='cancelFire'){
-      G.effects.fire={stacks:0,dur:0,dmgPerStack:3};
-      renderEffectsMini();
-      showSpecialBossOverlay(boss,'💨','#80c0e0','Le Souffleur éteint le feu !','Tous vos stacks de feu sont annulés');
-      return;
-    }
-    if(bossAction.type==='atk'||bossAction.type==='atkFire'){
-      const isAtkFire=bossAction.type==='atkFire';
-      if(isAtkFire){
-        G.effects.teamFire=(G.effects.teamFire||0)+1;
-        updatePVBars();
+    showTeamAttackOverlay(fireDmg, ()=>{
+      if(bossAction.type==='armorUp'){
+        G.effects.armor=Math.min(4,G.effects.armor+bossAction.val);
         renderEffectsMini();
-        addFeedItem({icon:'🔥',text:boss.nom+' — Feu ennemi',val:'🔥'.repeat(G.effects.teamFire)+' actif',fc:'feu'});
-      }
-      const rawDmg=bossAction.val;
-      if(G.activeBouclierItem){
-        G.activeBouclierItem=false;
-        const bi=G.inventory.indexOf('bouclier');if(bi!==-1)G.inventory.splice(bi,1);
-        updateItemBtn();
-        showBossAttackOverlay(boss,bossAction,rawDmg,0,[{icon:'🛡️',label:'Bouclier d\'urgence — attaque annulee !',before:rawDmg,after:0,color:'#9b7fe8'}],isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null,fireDmg);
+        const ar=G.effects.armor;
+        addFeedItem({icon:'🛡️',text:boss.nom+' — Armure',val:'🛡️'.repeat(ar)+' −'+(ar*20)+'% dégâts',fc:'shield'});
+        const subtitles=['','Vos attaques sont réduites de 20%','Vos attaques sont réduites de 40%','Vos attaques sont réduites de 60%','Vos attaques sont réduites de 80% — Brisez ses boucliers !'];
+        showSpecialBossOverlay(boss,'🛡️🛡️','#e8a030',`Le boss gagne ${bossAction.val} bouclier(s) !`,subtitles[ar]||'');
         return;
       }
-      const mods=[];
-      let dmg=rawDmg;
-      const dodgeRatio=G.effects.dodge;
-      if(dodgeRatio>0){
-        const before=dmg;
-        dmg=Math.round(dmg*(1-dodgeRatio));
-        G.effects.dodge=0;
-        mods.push({icon:'🌀',label:dodgeRatio>=1.0?"L'equipe esquive — degats annules":"L'equipe esquive — degats reduits de "+Math.round(dodgeRatio*100)+'%',before,after:dmg,color:'#4a9ae8'});
+      if(bossAction.type==='fireDot'){
+        G.effects.teamFire=(G.effects.teamFire||0)+1;
+        renderEffectsMini();
+        addFeedItem({icon:'🔥',text:boss.nom+' — Feu ennemi',val:'🔥'.repeat(G.effects.teamFire)+' actif',fc:'feu'});
+        showSpecialBossOverlay(boss,'🔥','#c84020',bossAction.desc||boss.nom+' vous embrase !','🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV par manche (cumulable)');
+        return;
       }
-      if((G.effects.shield||0)>0 && dmg>0){
-        const before=dmg;
-        const absorbed=Math.min(G.effects.shield,dmg);
-        G.effects.shield-=absorbed;
-        dmg-=absorbed;
-        mods.push({icon:'🛡️',label:absorbed>=before?"Le bouclier absorbe tous les dégâts !":"Le bouclier absorbe "+absorbed+" PV de dégâts",before,after:dmg,color:'#9b7fe8'});
+      if(bossAction.type==='cancelFire'){
+        G.effects.fire={stacks:0,dur:0,dmgPerStack:3};
+        renderEffectsMini();
+        showSpecialBossOverlay(boss,'💨','#80c0e0','Le Souffleur éteint le feu !','Tous vos stacks de feu sont annulés');
+        return;
       }
-      showBossAttackOverlay(boss,bossAction,rawDmg,dmg,mods,isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null,fireDmg);
-    } else {
-      if(bossAction.type==='heal'){G.bossPV=Math.min(G.bossPVMax,G.bossPV+bossAction.val);updatePVBars();}
-      if(bossAction.type==='shield'){G.bossShield=bossAction.val;}
-      renderEffectsMini();
-      showBossNonAtkOverlay(boss,bossAction);
-    }
+      if(bossAction.type==='atk'||bossAction.type==='atkFire'){
+        const isAtkFire=bossAction.type==='atkFire';
+        if(isAtkFire){
+          G.effects.teamFire=(G.effects.teamFire||0)+1;
+          updatePVBars();
+          renderEffectsMini();
+          addFeedItem({icon:'🔥',text:boss.nom+' — Feu ennemi',val:'🔥'.repeat(G.effects.teamFire)+' actif',fc:'feu'});
+        }
+        const rawDmg=bossAction.val;
+        if(G.activeBouclierItem){
+          G.activeBouclierItem=false;
+          const bi=G.inventory.indexOf('bouclier');if(bi!==-1)G.inventory.splice(bi,1);
+          updateItemBtn();
+          showBossAttackOverlay(boss,bossAction,rawDmg,0,[{icon:'🛡️',label:'Bouclier d\'urgence — attaque annulee !',before:rawDmg,after:0,color:'#9b7fe8'}],isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null);
+          return;
+        }
+        const mods=[];
+        let dmg=rawDmg;
+        const dodgeRatio=G.effects.dodge;
+        if(dodgeRatio>0){
+          const before=dmg;
+          dmg=Math.round(dmg*(1-dodgeRatio));
+          G.effects.dodge=0;
+          mods.push({icon:'🌀',label:dodgeRatio>=1.0?"L'equipe esquive — degats annules":"L'equipe esquive — degats reduits de "+Math.round(dodgeRatio*100)+'%',before,after:dmg,color:'#4a9ae8'});
+        }
+        if((G.effects.shield||0)>0 && dmg>0){
+          const before=dmg;
+          const absorbed=Math.min(G.effects.shield,dmg);
+          G.effects.shield-=absorbed;
+          dmg-=absorbed;
+          mods.push({icon:'🛡️',label:absorbed>=before?"Le bouclier absorbe tous les dégâts !":"Le bouclier absorbe "+absorbed+" PV de dégâts",before,after:dmg,color:'#9b7fe8'});
+        }
+        showBossAttackOverlay(boss,bossAction,rawDmg,dmg,mods,isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null);
+      } else {
+        if(bossAction.type==='heal'){G.bossPV=Math.min(G.bossPVMax,G.bossPV+bossAction.val);updatePVBars();}
+        if(bossAction.type==='shield'){G.bossShield=bossAction.val;}
+        renderEffectsMini();
+        showBossNonAtkOverlay(boss,bossAction);
+      }
+    });
   };
 
   showTeamActionsOverlay(teamCards, launchBossOverlay);
 }
 
-function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote,fireDmg){
+// Récap des dégâts infligés par l'équipe au boss ce tour — toujours affiché avant l'action du boss,
+// quel que soit son type (attaque, soin, bouclier, feu...). Avance uniquement sur clic ("Suite →").
+function showTeamAttackOverlay(fireDmg, onDone){
+  const ov=document.getElementById('boss-overlay');
+  const btn=document.getElementById('boss-overlay-btn');
+  const content=document.getElementById('boss-overlay-content');
+  ov.classList.add('active');
+  ov.classList.add('team-attack-phase');
+  content.innerHTML='';
+  btn.style.display='none';
+
+  const bossPVAvant=G.bossPVRoundStart??G.bossPV;
+  const bossPVApres=Math.max(0,G.bossPV);
+  const dmgEquipe=bossPVAvant-bossPVApres;
+  const noDmg=dmgEquipe<=0;
+
+  const intro=document.createElement('div');
+  intro.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center;animation:teamAttackIn .3s ease-out;';
+  const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:12px';e1.textContent='👥';
+  const title=document.createElement('div');title.className='team-attack-title';title.textContent=noDmg?`L'ÉQUIPE N'ATTAQUE PAS`:`L'ÉQUIPE ATTAQUE ${getBoss(G.selectedBoss).nom} !`;
+  intro.appendChild(e1);intro.appendChild(title);
+  content.appendChild(intro);
+
+  if(!noDmg){
+    const armorPct=G.armorAtRoundStart*20;
+    const rawTotal=G.rawDmgThisRound||dmgEquipe;
+    const hasArmor=armorPct>0&&rawTotal>dmgEquipe;
+    const dmgWrap=document.createElement('div');dmgWrap.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:18px;';
+
+    if(hasArmor){
+      const shield=document.createElement('div');shield.style.cssText='display:flex;align-items:center;gap:8px;background:#1a0e18;border:1px solid #5a2a7a;border-radius:10px;padding:8px 14px;margin-bottom:16px';
+      const sIcon=document.createElement('span');sIcon.textContent='🛡️';sIcon.style.fontSize='18px';
+      const sTxt=document.createElement('span');sTxt.style.cssText='font-size:12px;color:#c090e0';sTxt.textContent='Bouclier boss actif — dégâts réduits de '+armorPct+'%';
+      shield.appendChild(sIcon);shield.appendChild(sTxt);
+      dmgWrap.appendChild(shield);
+
+      const dmgRow=document.createElement('div');dmgRow.style.cssText='display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px';
+      const dRaw=document.createElement('div');dRaw.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-strike);text-decoration:line-through';dRaw.textContent='−'+rawTotal;
+      const dArr=document.createElement('div');dArr.style.cssText='font-size:22px;color:var(--dim)';dArr.textContent='→';
+      const dReal=document.createElement('div');dReal.style.cssText='font-family:var(--font-title);font-size:72px;color:var(--ov-dmg);line-height:1';dReal.textContent='−'+dmgEquipe;
+      dmgRow.appendChild(dRaw);dmgRow.appendChild(dArr);dmgRow.appendChild(dReal);
+      dmgWrap.appendChild(dmgRow);
+    } else {
+      const directDmg=Math.max(0,dmgEquipe-(fireDmg||0));
+      const breakdown=document.createElement('div');breakdown.style.cssText='display:flex;flex-direction:column;gap:6px;min-width:230px;margin-bottom:4px;';
+
+      const directRow=document.createElement('div');directRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:16px;color:var(--ov-text);';
+      directRow.innerHTML='<span>⚔️ Dégâts directs</span><span style="font-weight:700">−'+directDmg+' PV</span>';
+      breakdown.appendChild(directRow);
+
+      if(fireDmg>0){
+        const fireRow=document.createElement('div');fireRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:16px;color:#e85020;';
+        fireRow.innerHTML='<span>🔥 Dégâts de feu</span><span style="font-weight:700">−'+fireDmg+' PV</span>';
+        breakdown.appendChild(fireRow);
+      }
+
+      const sep=document.createElement('div');sep.style.cssText='height:1px;background:var(--border);margin:2px 0;';
+      breakdown.appendChild(sep);
+
+      const totalRow=document.createElement('div');totalRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-family:var(--font-title);font-size:22px;color:var(--ov-dmg);letter-spacing:.03em;';
+      totalRow.innerHTML='<span>Total</span><span>−'+dmgEquipe+' PV</span>';
+      breakdown.appendChild(totalRow);
+
+      dmgWrap.appendChild(breakdown);
+    }
+
+    const bossBar=document.createElement('div');bossBar.style.cssText='display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;margin-bottom:14px';
+    const before=document.createElement('div');before.style.cssText='font-family:var(--font-title);font-size:42px;color:var(--ov-strike)';before.textContent=bossPVAvant;
+    const arrow=document.createElement('div');arrow.style.cssText='font-size:26px;color:var(--text)';arrow.textContent='→';
+    const after=document.createElement('div');after.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-dmg);font-weight:700;animation:teamDamagePulse 0.8s ease-in-out';after.textContent=bossPVApres;
+    bossBar.appendChild(before);bossBar.appendChild(arrow);bossBar.appendChild(after);
+    const label=document.createElement('div');label.style.cssText='font-size:14px;color:var(--ov-sublabel);margin-bottom:12px';label.textContent=`Le boss descend en points de vie !`;
+    dmgWrap.appendChild(label);dmgWrap.appendChild(bossBar);
+    content.appendChild(dmgWrap);
+  } else {
+    const zero=document.createElement('div');zero.className='team-attack-zero';zero.textContent='Aucun dégât !';
+    content.appendChild(zero);
+  }
+
+  btn.style.display='block';
+  btn.className='boss-overlay-btn';
+  btn.textContent='Suite →';
+  btn.onclick=()=>{ ov.classList.remove('team-attack-phase'); onDone(); };
+}
+
+function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
   const ov=document.getElementById('boss-overlay');
   const btn=document.getElementById('boss-overlay-btn');
   ov.classList.add('active');
   btn.style.display='none';
 
-  let phase=0;
+  let phase=1;
   let modStep=0;
   let phaseTimer=null;
-  const bossPVAvant=G.bossPVRoundStart??G.bossPV;
-  const bossPVApres=Math.max(0,G.bossPV);
-  const dmgEquipe=bossPVAvant-bossPVApres;
 
   function renderPhase(){
     if(phaseTimer){clearTimeout(phaseTimer);phaseTimer=null;}
     const content=document.getElementById('boss-overlay-content');
     content.innerHTML='';
-    ov.classList.toggle('team-attack-phase', phase===0);
 
-    if(phase===0){
-      const noDmg=dmgEquipe<=0;
-      const intro=document.createElement('div');
-      intro.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center;animation:teamAttackIn .3s ease-out;';
-
-      const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:12px';e1.textContent='👥';
-      const title=document.createElement('div');title.className='team-attack-title';title.textContent=noDmg?`L'ÉQUIPE N'ATTAQUE PAS`:`L'ÉQUIPE ATTAQUE ${getBoss(G.selectedBoss).nom} !`;
-      intro.appendChild(e1);intro.appendChild(title);
-      content.appendChild(intro);
-
-      if(!noDmg){
-        const armorPct=G.armorAtRoundStart*20;
-        const rawTotal=G.rawDmgThisRound||dmgEquipe;
-        const hasArmor=armorPct>0&&rawTotal>dmgEquipe;
-        const dmgWrap=document.createElement('div');dmgWrap.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:18px;';
-
-        if(hasArmor){
-          const shield=document.createElement('div');shield.style.cssText='display:flex;align-items:center;gap:8px;background:#1a0e18;border:1px solid #5a2a7a;border-radius:10px;padding:8px 14px;margin-bottom:16px';
-          const sIcon=document.createElement('span');sIcon.textContent='🛡️';sIcon.style.fontSize='18px';
-          const sTxt=document.createElement('span');sTxt.style.cssText='font-size:12px;color:#c090e0';sTxt.textContent='Bouclier boss actif — dégâts réduits de '+armorPct+'%';
-          shield.appendChild(sIcon);shield.appendChild(sTxt);
-          dmgWrap.appendChild(shield);
-
-          const dmgRow=document.createElement('div');dmgRow.style.cssText='display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px';
-          const dRaw=document.createElement('div');dRaw.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-strike);text-decoration:line-through';dRaw.textContent='−'+rawTotal;
-          const dArr=document.createElement('div');dArr.style.cssText='font-size:22px;color:var(--dim)';dArr.textContent='→';
-          const dReal=document.createElement('div');dReal.style.cssText='font-family:var(--font-title);font-size:72px;color:var(--ov-dmg);line-height:1';dReal.textContent='−'+dmgEquipe;
-          dmgRow.appendChild(dRaw);dmgRow.appendChild(dArr);dmgRow.appendChild(dReal);
-          dmgWrap.appendChild(dmgRow);
-        } else {
-          const directDmg=Math.max(0,dmgEquipe-(fireDmg||0));
-          const breakdown=document.createElement('div');breakdown.style.cssText='display:flex;flex-direction:column;gap:6px;min-width:230px;margin-bottom:4px;';
-
-          const directRow=document.createElement('div');directRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:16px;color:var(--ov-text);';
-          directRow.innerHTML='<span>⚔️ Dégâts directs</span><span style="font-weight:700">−'+directDmg+' PV</span>';
-          breakdown.appendChild(directRow);
-
-          if(fireDmg>0){
-            const fireRow=document.createElement('div');fireRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:16px;color:#e85020;';
-            fireRow.innerHTML='<span>🔥 Dégâts de feu</span><span style="font-weight:700">−'+fireDmg+' PV</span>';
-            breakdown.appendChild(fireRow);
-          }
-
-          const sep=document.createElement('div');sep.style.cssText='height:1px;background:var(--border);margin:2px 0;';
-          breakdown.appendChild(sep);
-
-          const totalRow=document.createElement('div');totalRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-family:var(--font-title);font-size:22px;color:var(--ov-dmg);letter-spacing:.03em;';
-          totalRow.innerHTML='<span>Total</span><span>−'+dmgEquipe+' PV</span>';
-          breakdown.appendChild(totalRow);
-
-          dmgWrap.appendChild(breakdown);
-        }
-
-        const bossBar=document.createElement('div');bossBar.style.cssText='display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;margin-bottom:14px';
-        const before=document.createElement('div');before.style.cssText='font-family:var(--font-title);font-size:42px;color:var(--ov-strike)';before.textContent=bossPVAvant;
-        const arrow=document.createElement('div');arrow.style.cssText='font-size:26px;color:var(--text)';arrow.textContent='→';
-        const after=document.createElement('div');after.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-dmg);font-weight:700;animation:teamDamagePulse 0.8s ease-in-out';after.textContent=bossPVApres;
-        bossBar.appendChild(before);bossBar.appendChild(arrow);bossBar.appendChild(after);
-        const label=document.createElement('div');label.style.cssText='font-size:14px;color:var(--ov-sublabel);margin-bottom:12px';label.textContent=`Le boss descend en points de vie !`;
-        dmgWrap.appendChild(label);dmgWrap.appendChild(bossBar);
-        content.appendChild(dmgWrap);
-        phaseTimer=setTimeout(()=>{phase=1;renderPhase();},2300);
-        return;
-      }
-
-      const zero=document.createElement('div');zero.className='team-attack-zero';zero.textContent='Aucun dégât !';
-      content.appendChild(zero);
-      phaseTimer=setTimeout(()=>{phase=1;renderPhase();},2300);
-      return;
-
-    } else if(phase===1){
+    if(phase===1){
       const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:10px';e1.textContent=fireNote?'🔥⚔️':'💀';
       const e2=document.createElement('div');e2.style.cssText='font-family:var(--font-title);font-size:30px;color:var(--ov-boss-name);letter-spacing:.08em;margin-bottom:8px';e2.textContent=boss.nom.toUpperCase();
       const e3=document.createElement('div');e3.style.cssText='font-size:16px;color:var(--ov-sublabel);margin-bottom:20px';e3.textContent=bossAction.desc;
