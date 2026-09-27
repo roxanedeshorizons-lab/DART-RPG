@@ -864,6 +864,8 @@ function renderHome(){
       <input class="player-name-inp" value="${p.name}" placeholder="Joueur ${i+1}" onchange="G.players[${i}].name=this.value"/>
       ${G.players.length>1?`<button class="remove-btn" onclick="removeP(${i})">×</button>`:''}
     </div>`).join('');
+  const addBtn=document.getElementById('add-player-btn');
+  if(addBtn)addBtn.style.display=G.players.length<4?'':'none';
 }
 function selBoss(i){G.selectedBoss=i;buildSectorMap(i);renderHome();renderRef();renderCible();}
 function removeP(i){G.players.splice(i,1);renderHome();}
