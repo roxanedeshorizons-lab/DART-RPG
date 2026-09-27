@@ -903,7 +903,6 @@ function startGame(){
 // ============================================================
 // DART INPUT
 // ============================================================
-function baseTurnDarts(){return G.players.length===1?6:3;}
 function initDI(){DI={mod:1,darts:[]};G.goldenDartsRemaining=0;renderMods();}
 function setMod(m){DI.mod=m;renderMods();}
 function renderMods(){
@@ -946,7 +945,7 @@ function dartPress(v){
   if(now-lastDartTime<80)return;
   lastDartTime=now;
   if(G.scores[G.currentPlayer]!==null)return;
-  const maxDarts=baseTurnDarts()+(G.goldenDartsRemaining>0?3:0);
+  const maxDarts=G.goldenDartsRemaining>0?6:3;
   if(DI.darts.length>=maxDarts)return;
   const m=DI.mod;
   if(v===25&&m===3){setMod(2);return;}
@@ -995,7 +994,7 @@ function dartPress(v){
   const label=v===0?'0':v===25?(m===2?'DBull':'Bull'):`${prefix}${v}`;
   const dartIcon=ad.icon;
   const dartName=null;
-  const isGolden=G.goldenDartsRemaining>0&&DI.darts.length>=baseTurnDarts();
+  const isGolden=G.goldenDartsRemaining>0&&DI.darts.length>=3;
   const goldenMult=isGolden?1.3:1.0;
   const aef=isGolden?scaleEf(ef,goldenMult):ef;
 
@@ -1206,7 +1205,7 @@ function finishPlayerTurn(){
   if(G.isUndoing)return;
   const cp=G.currentPlayer;
   if(G.scores[cp]!==null)return;
-  const maxDarts=baseTurnDarts()+(G.goldenDartsRemaining>0?3:0);
+  const maxDarts=G.goldenDartsRemaining>0?6:3;
   if(DI.darts.length<maxDarts)return;
 
   G._playerDarts[cp]=[...DI.darts];
@@ -1574,7 +1573,7 @@ function openPlayerEditMenu(playerIndex){
   if(G.screen !== 'game') return;
   const isActive = G.currentPlayer === playerIndex && G.scores[playerIndex] === null;
   const darts = isActive ? DI.darts : G._playerDarts[playerIndex];
-  if(!Array.isArray(darts) || darts.length < baseTurnDarts()) return;
+  if(!Array.isArray(darts) || darts.length < 3) return;
   G.playerEditor = playerIndex;
   renderStrip();
 }
@@ -1632,9 +1631,8 @@ function renderPlayerRowHtml(i){
   const done=G.scores[i]!==null;
   const active=i===G.currentPlayer&&!done;
   const darts=active?DI.darts:(done&&G._playerDarts[i]?G._playerDarts[i]:[]);
-  const baseSlots=baseTurnDarts();
-  const totalSlots=active&&darts.length>baseSlots?darts.length:baseSlots;
-  const showActiveEditButton = G.screen === 'game' && Array.isArray(darts) && darts.length >= baseSlots;
+  const totalSlots=active&&darts.length>3?darts.length:3;
+  const showActiveEditButton = G.screen === 'game' && Array.isArray(darts) && darts.length >= 3;
   const slots=Array.from({length:totalSlots},(_,j)=>{
     const d=darts[j];
     if(d){
@@ -1649,7 +1647,7 @@ function renderPlayerRowHtml(i){
     return `<div class="p-slot" style="background:var(--bg);color:#111">—</div>`;
   }).join('');
 
-  const popup = G.playerEditor === i && Array.isArray(darts) && darts.length >= baseSlots ? `
+  const popup = G.playerEditor === i && Array.isArray(darts) && darts.length >= 3 ? `
     <div class="player-edit-popup" style="display:flex;align-items:flex-end;gap:8px;padding:6px 8px;margin:0 0 6px 0;background:var(--popup-bg);border:1px solid var(--popup-border);border-radius:9px;box-shadow:0 10px 20px rgba(0,0,0,.25);max-width:100%;overflow-x:auto;white-space:nowrap;position:relative;">
       ${darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:7px;">
         <span style="font-size:14px;line-height:1">${d.dartIcon||'•'}</span>
