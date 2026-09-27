@@ -1737,8 +1737,9 @@ function validateRound(){
   const boss=getBoss(G.selectedBoss);
 
   // Appliquer les dégâts de feu sur le boss
+  let fireDmg = 0;
   if(G.effects.fire.stacks > 0){
-    const fireDmg = G.effects.fire.stacks * (G.effects.fire.dmgPerStack || 3);
+    fireDmg = G.effects.fire.stacks * (G.effects.fire.dmgPerStack || 3);
     G.bossPV = Math.max(0, G.bossPV - fireDmg);
     G.stats.totalDmg += fireDmg;
     addFeedItem({icon:'🔥', text:`Feu — ${G.effects.fire.stacks} stack(s)`, val:`−${fireDmg} PV boss`, fc:'feu'});
@@ -1818,7 +1819,7 @@ function validateRound(){
         G.activeBouclierItem=false;
         const bi=G.inventory.indexOf('bouclier');if(bi!==-1)G.inventory.splice(bi,1);
         updateItemBtn();
-        showBossAttackOverlay(boss,bossAction,rawDmg,0,[{icon:'🛡️',label:'Bouclier d\'urgence — attaque annulee !',before:rawDmg,after:0,color:'#9b7fe8'}],isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null);
+        showBossAttackOverlay(boss,bossAction,rawDmg,0,[{icon:'🛡️',label:'Bouclier d\'urgence — attaque annulee !',before:rawDmg,after:0,color:'#9b7fe8'}],isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null,fireDmg);
         return;
       }
       const mods=[];
@@ -1837,7 +1838,7 @@ function validateRound(){
         dmg-=absorbed;
         mods.push({icon:'🛡️',label:absorbed>=before?"Le bouclier absorbe tous les dégâts !":"Le bouclier absorbe "+absorbed+" PV de dégâts",before,after:dmg,color:'#9b7fe8'});
       }
-      showBossAttackOverlay(boss,bossAction,rawDmg,dmg,mods,isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null);
+      showBossAttackOverlay(boss,bossAction,rawDmg,dmg,mods,isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null,fireDmg);
     } else {
       if(bossAction.type==='heal'){G.bossPV=Math.min(G.bossPVMax,G.bossPV+bossAction.val);updatePVBars();}
       if(bossAction.type==='shield'){G.bossShield=bossAction.val;}
@@ -1849,7 +1850,7 @@ function validateRound(){
   showTeamActionsOverlay(teamCards, launchBossOverlay);
 }
 
-function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
+function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote,fireDmg){
   const ov=document.getElementById('boss-overlay');
   const btn=document.getElementById('boss-overlay-btn');
   ov.classList.add('active');
@@ -1898,11 +1899,27 @@ function showBossAttackOverlay(boss,bossAction,rawDmg,finalDmg,mods,fireNote){
           dmgRow.appendChild(dRaw);dmgRow.appendChild(dArr);dmgRow.appendChild(dReal);
           dmgWrap.appendChild(dmgRow);
         } else {
-          const counter=document.createElement('div');
-          counter.className='team-attack-dmg';
-          counter.style.color='var(--ov-dmg)';
-          counter.textContent='−'+dmgEquipe;
-          dmgWrap.appendChild(counter);
+          const directDmg=Math.max(0,dmgEquipe-(fireDmg||0));
+          const breakdown=document.createElement('div');breakdown.style.cssText='display:flex;flex-direction:column;gap:6px;min-width:230px;margin-bottom:4px;';
+
+          const directRow=document.createElement('div');directRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:16px;color:var(--ov-text);';
+          directRow.innerHTML='<span>⚔️ Dégâts directs</span><span style="font-weight:700">−'+directDmg+' PV</span>';
+          breakdown.appendChild(directRow);
+
+          if(fireDmg>0){
+            const fireRow=document.createElement('div');fireRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-size:16px;color:#e85020;';
+            fireRow.innerHTML='<span>🔥 Dégâts de feu</span><span style="font-weight:700">−'+fireDmg+' PV</span>';
+            breakdown.appendChild(fireRow);
+          }
+
+          const sep=document.createElement('div');sep.style.cssText='height:1px;background:var(--border);margin:2px 0;';
+          breakdown.appendChild(sep);
+
+          const totalRow=document.createElement('div');totalRow.style.cssText='display:flex;justify-content:space-between;align-items:center;font-family:var(--font-title);font-size:22px;color:var(--ov-dmg);letter-spacing:.03em;';
+          totalRow.innerHTML='<span>Total</span><span>−'+dmgEquipe+' PV</span>';
+          breakdown.appendChild(totalRow);
+
+          dmgWrap.appendChild(breakdown);
         }
 
         const bossBar=document.createElement('div');bossBar.style.cssText='display:flex;align-items:center;justify-content:center;gap:18px;margin-top:18px;margin-bottom:14px';
