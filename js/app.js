@@ -691,9 +691,6 @@ let DI={mod:1,darts:[]};
 let lastDartTime=0;
 
 function ini(n){return n.split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2)||'?';}
-const PV_SCALE={1:0.6,2:1.0,3:1.5,4:2.0};
-function pvScale(){return PV_SCALE[G.players.length]||1.0;}
-function scaledPV(base){return Math.round(base*pvScale());}
 
 // ============================================================
 // NAV
@@ -856,8 +853,8 @@ function renderHome(){
         <div><div class="boss-item-name">${b.nom}${b.custom?' <span class="labo-boss-badge" title="Boss personnalisé">⚗️</span>':''}</div><div class="boss-item-desc">${b.desc}</div></div>
       </div>
       <div class="boss-pills">
-        <div class="pill">Équipe <span>${scaledPV(b.teamPV)} PV</span></div>
-        <div class="pill">Boss <span>${b.pv===666?`<span onclick="xavierTap(event)" style="cursor:pointer">666</span>`:scaledPV(b.pv)} PV</span></div>
+        <div class="pill">Équipe <span>${b.teamPV} PV</span></div>
+        <div class="pill">Boss <span>${b.pv===666?`<span onclick="xavierTap(event)" style="cursor:pointer">666</span>`:b.pv} PV</span></div>
         <div class="pill"><span>${b.manches}</span> manches</div>
       </div>
       <div class="boss-item-actions">
