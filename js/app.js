@@ -829,10 +829,18 @@ let txSX=0;
 document.addEventListener('touchstart',e=>{txSX=e.touches[0].clientX;},{passive:true});
 document.addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-txSX;
+  if(G.screen==='home'){
+    const banVis=document.getElementById('branch-test-banner').classList.contains('visible');
+    if(dx<-60&&!banVis)showBranchTestBanner();
+    if(dx>60&&banVis)hideBranchTestBanner();
+    return;
+  }
   const vis=document.getElementById('ref-page').classList.contains('visible');
   if(dx<-60&&!vis)showRef();
   if(dx>60&&vis)hideRef();
 },{passive:true});
+function showBranchTestBanner(){document.getElementById('branch-test-banner').classList.add('visible');}
+function hideBranchTestBanner(){document.getElementById('branch-test-banner').classList.remove('visible');}
 
 // ============================================================
 // HOME
