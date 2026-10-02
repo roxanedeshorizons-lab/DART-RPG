@@ -5,17 +5,21 @@
 // ============================================================
 const ACTIONS={
   atk_faible:{name:"Attaque faible",icon:"🗡️",sector:13,feedClass:"atk",
-    simple:{type:"atk",val:5,  desc:"−5 PV au boss"},
-    double:{type:"atk",val:10, desc:"−10 PV au boss"},
-    triple:{type:"atk",val:15, desc:"−15 PV au boss"}},
-  atk_moyenne:{name:"Attaque moyenne",icon:"🗡️🗡️",sector:20,feedClass:"atk",
     simple:{type:"atk",val:10, desc:"−10 PV au boss"},
     double:{type:"atk",val:20, desc:"−20 PV au boss"},
     triple:{type:"atk",val:30, desc:"−30 PV au boss"}},
-  atk_forte:{name:"Attaque forte",icon:"🗡️🗡️🗡️",sector:11,feedClass:"atk",
+  atk_moyenne:{name:"Attaque moyenne",icon:"⚔️",sector:20,feedClass:"atk",
     simple:{type:"atk",val:20, desc:"−20 PV au boss"},
     double:{type:"atk",val:40, desc:"−40 PV au boss"},
     triple:{type:"atk",val:60, desc:"−60 PV au boss"}},
+  atk_forte:{name:"Attaque forte",icon:"⚔️⚔️⚔️",sector:11,feedClass:"atk",
+    simple:{type:"atk",val:30, desc:"−30 PV au boss"},
+    double:{type:"atk",val:60, desc:"−60 PV au boss"},
+    triple:{type:"atk",val:90, desc:"−90 PV au boss"}},
+  meteorite:{name:"Météorite",icon:"☄️",feedClass:"atk",
+    simple:{type:"atk",val:100,desc:"−100 PV au boss"},
+    double:{type:"atk",val:100,desc:"−100 PV au boss"},
+    triple:{type:"atk",val:100,desc:"−100 PV au boss"}},
   soin:{name:"Soin",icon:"💚",sector:5,feedClass:"heal",
     simple:{type:"heal_team",val:10,desc:"+10 PV équipe"},
     double:{type:"heal_team",val:20,desc:"+20 PV équipe"},
@@ -682,8 +686,9 @@ let G={
   inputLocked:false,isUndoing:false,playerEditor:null,secretTaps:0,xavierTaps:0,
   bossPVRoundStart:0,teamPVAtRoundStart:0,shieldAtRoundStart:0,armorAtRoundStart:0,
   fireAtRoundStart:{stacks:0,dur:0,dmgPerStack:3},
-  // rage tracking for current round: has1/has2 = whether each rage sector was hit this manche
-  rage:{has1:false,has2:false},
+  // rage: has1/has2 = secteurs touches cette manche ; active/dur = combo en cours (persiste 2 manches)
+  rage:{has1:false,has2:false,active:false,dur:0},
+  rageAtRoundStart:{active:false,dur:0},
   customBosses:[],bossOverrides:{},labo:null,
   theme:'light',
 };
@@ -910,7 +915,7 @@ function startGame(){
   G.goldenDartsRemaining=0;
   G.activeBoostNext=false;G.activeResurr=false;G.activeBouclierItem=false;
   buildSectorMap(G.selectedBoss);
-  G.bossShield=0;G.rage={has1:false,has2:false};
+  G.bossShield=0;G.rageAtRoundStart={active:false,dur:0};G.rage={has1:false,has2:false,active:false,dur:0};
   G.stats={biggestHit:0,totalDmg:0,totalDmgTaken:0,heals:0,startTime:Date.now()};
   initDI();renderGameUI();nav('game');
 }
@@ -929,7 +934,7 @@ function renderMods(){
 }
 
 function computeRageMulti(){
-  return (G.rage.has1&&G.rage.has2)?2:1;
+  return G.rage.active?2:1;
 }
 
 function scaleEf(ef,mult){
@@ -1118,9 +1123,10 @@ function dartPress(v){
     if(b.type==='atk'){G.bossPV=Math.max(0,G.bossPV-b.val);G.stats.totalDmg+=b.val;if(b.val>G.stats.biggestHit)G.stats.biggestHit=b.val;addFeedItem({icon:'💥',text:'Contre-attaque',val:'−'+b.val+' PV boss',fc:'atk'});updatePVBars();}
   }
 
-  // Check rage combo active
+  // Check rage combo active — active pendant 2 manches, rafraichi si retouche les 2 secteurs
   if(G.rage.has1&&G.rage.has2){
-    addFeedItem({icon:'🤬',text:'Combo Rage activé ! ('+rageS[0]+'+'+rageS[1]+')',val:'Dégâts ×2',fc:'rage'});
+    G.rage.active=true;G.rage.dur=2;
+    addFeedItem({icon:'🤬',text:'Combo Rage activé ! ('+rageS[0]+'+'+rageS[1]+')',val:'Dégâts ×2 pendant 2 manches',fc:'rage'});
   }
 
   renderStrip();
@@ -1448,7 +1454,7 @@ function renderGameUI(){
   G.liveFeed=[];G.inputLocked=false;G.isUndoing=false;setGridLocked(false);lastDartTime=0;
   G.bossPVRoundStart=G.bossPV;G.teamPVAtRoundStart=G.teamPV;
   G.fireAtRoundStart={stacks:0,dur:0,dmgPerStack:3};
-  G.rage={has1:false,has2:false};
+  G.rage={has1:false,has2:false,active:G.rageAtRoundStart.active,dur:G.rageAtRoundStart.dur};
   const feedEl=document.getElementById('live-feed');
   if(feedEl)feedEl.innerHTML='';
   const lat=document.getElementById('last-action-text');
@@ -1553,7 +1559,7 @@ function rebuildRoundStateFromCurrentDarts(){
     teamFire:0,armor:currentArmor
   };
   G.goldenDartsRemaining = 0;
-  G.rage = {has1:false,has2:false};
+  G.rage = {has1:false,has2:false,active:G.rageAtRoundStart.active,dur:G.rageAtRoundStart.dur};
 
   const allDarts=[];
   const _as=activeSlot();
@@ -2116,6 +2122,13 @@ function endRound(bossDmg){
   // Sauvegarder l'état du feu boss pour la manche suivante (carry-over)
   G.fireAtRoundStart = {stacks:G.effects.fire.stacks, dur:G.effects.fire.dur, dmgPerStack:G.effects.fire.dmgPerStack||3};
 
+  // Rage : dure 2 manches — decompte a chaque fin de manche
+  if(G.rage.active){
+    G.rage.dur--;
+    if(G.rage.dur<=0){G.rage.active=false;G.rage.dur=0;}
+  }
+  G.rageAtRoundStart = {active:G.rage.active, dur:G.rage.dur};
+
   G.manche++;
   G.bossPVRoundStart = G.bossPV;
   G.teamPVAtRoundStart = G.teamPV;
@@ -2127,6 +2140,7 @@ function endRound(bossDmg){
   G.slotDarts = [[], []];
   G.slotDone = [false, false];
   G.currentPlayer = G.turnQueue[G.cycleStart];
+  G.rage = {has1:false, has2:false, active:G.rageAtRoundStart.active, dur:G.rageAtRoundStart.dur};
   G.playerEditor = null;
   DI = {mod:1,darts:[]};
   G.goldenDartsRemaining = 0;
@@ -2251,7 +2265,7 @@ function showMiniRef(key){
       '<span style="font-size:10px;color:var(--dim);margin-left:auto">✕ fermer</span>'+
     '</div>'+
     (key==='neutre_combo'?
-      (()=>{const rs=getBoss(G.selectedBoss).sectors.rage||[];return rs.length>=2?'<div style="font-size:12px;color:var(--muted)">Toucher <strong style="color:#e8a030">'+rs[0]+' + '+rs[1]+'</strong> dans la même manche (peu importe l\'ordre ou Simple/Double/Triple) multiplie tous les dégâts d\'attaque de la manche par <strong style="color:#e8a030">×2</strong>.</div>':'<div style="font-size:12px;color:var(--muted)">Combo rage non disponible pour ce boss.</div>';})()
+      (()=>{const rs=getBoss(G.selectedBoss).sectors.rage||[];return rs.length>=2?'<div style="font-size:12px;color:var(--muted)">Toucher <strong style="color:#e8a030">'+rs[0]+' + '+rs[1]+'</strong> dans la même manche (peu importe l\'ordre ou Simple/Double/Triple) multiplie tous les dégâts d\'attaque par <strong style="color:#e8a030">×2</strong> pendant <strong style="color:#e8a030">2 manches</strong>.</div>':'<div style="font-size:12px;color:var(--muted)">Combo rage non disponible pour ce boss.</div>';})()
     :
       '<div class="ref-effect"><span class="ref-tag s">Simple</span>'+colorDesc(a.simple.desc)+'</div>'+
       '<div class="ref-effect"><span class="ref-tag d">Double</span>'+colorDesc(a.double.desc)+'</div>'+
