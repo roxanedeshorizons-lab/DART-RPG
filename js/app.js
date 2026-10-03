@@ -1561,9 +1561,9 @@ function renderEffectsMini(){
 
   // === Zone équipe (verte) — défenses de l'équipe ===
   if((G.effects.dodgeCharges||0)>0)
-    team.appendChild(chip('🌀'.repeat(G.effects.dodgeCharges),'dodge'));
+    team.appendChild(chip(G.effects.dodgeCharges>=3?'🌀✅':'🌀'.repeat(G.effects.dodgeCharges),'dodge'));
   if(G.effects.dodge>=1.0)
-    team.appendChild(chip('🌀✨','dodgePerfect'));
+    team.appendChild(chip('🌀✅','dodgePerfect'));
   if((G.effects.shield||0)>0)
     team.appendChild(chip(shieldEmoji(G.effects.shield)+' '+G.effects.shield,'shield'));
 
