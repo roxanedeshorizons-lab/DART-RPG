@@ -1043,18 +1043,18 @@ function dartPress(v){
     if(dmg>G.stats.biggestHit)G.stats.biggestHit=dmg;
     G.stats.totalDmg+=dmg;
     const armorSuffix=G.effects.armor>0?' (armure −'+getArmorReduc()+'%)':'';
-    addFeedItem({icon:ad.icon,text:(G.players[G.currentPlayer]?.name||'')+' — '+ad.name+goldSuffix,val:'−'+dmg+' PV boss'+armorSuffix,fc:'atk'});
+    addFeedItem({icon:ad.icon,player:(G.players[G.currentPlayer]?.name||''),mult:m,action:ad.name+goldSuffix,sector:v,val:'−'+dmg+' PV boss'+armorSuffix,fc:'atk'});
     updatePVBars();
   }
   if(aef.type==='heal_team'){
     G.teamPV=Math.min(G.teamPVMax,G.teamPV+aef.val);
     G.stats.heals+=aef.val;
-    addFeedItem({icon:'💚',text:(G.players[G.currentPlayer]?.name||'')+' — Soin'+(isGolden?' 🎯':''),val:'+'+aef.val+' PV équipe',fc:'heal'});
+    addFeedItem({icon:'💚',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Soin'+(isGolden?' 🎯':''),sector:v,val:'+'+aef.val+' PV équipe',fc:'heal'});
     updatePVBars();
   }
   if(aef.type==='shield'){
     G.effects.shield=(G.effects.shield||0)+aef.val;
-    addFeedItem({icon:'🛡️',text:(G.players[G.currentPlayer]?.name||'')+' — Bouclier'+(isGolden?' 🎯':''),val:'+'+aef.val+' PV de bouclier',fc:'shield'});
+    addFeedItem({icon:'🛡️',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Bouclier'+(isGolden?' 🎯':''),sector:v,val:'+'+aef.val+' PV de bouclier',fc:'shield'});
     renderEffectsMini();
   }
   if(aef.type==='fire'){
@@ -1062,7 +1062,7 @@ function dartPress(v){
     G.effects.fire.dur=2;
     const dps=G.effects.fire.dmgPerStack||3;
     updatePVBars();
-    addFeedItem({icon:'🔥',text:(G.players[G.currentPlayer]?.name||'')+' — Feu'+(isGolden?' 🎯':''),val:'🔥'.repeat(G.effects.fire.stacks)+' — '+(G.effects.fire.stacks*dps)+' PV/manche',fc:'feu'});
+    addFeedItem({icon:'🔥',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Feu'+(isGolden?' 🎯':''),sector:v,val:'🔥'.repeat(G.effects.fire.stacks)+' — '+(G.effects.fire.stacks*dps)+' PV/manche',fc:'feu'});
     renderEffectsMini();
   }
   if(aef.type==='dodge'){
@@ -1070,7 +1070,7 @@ function dartPress(v){
     G.effects.dodge=1.0;G.effects.dodgeCharges=0;
     DI.darts[DI.darts.length-1].prevDodge=prevDodge;
     DI.darts[DI.darts.length-1].prevDodgeCharges=prevDodgeCharges;
-    addFeedItem({icon:'🌀',text:(G.players[G.currentPlayer]?.name||'')+' — Esquive'+(isGolden?' 🎯':''),val:`Esquive prête — prochaine attaque annulée !`,fc:'dodge'});
+    addFeedItem({icon:'🌀',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Esquive'+(isGolden?' 🎯':''),sector:v,val:`Esquive prête — prochaine attaque annulée !`,fc:'dodge'});
     renderEffectsMini();
   }
   if(aef.type==='dodge_charge'){
@@ -1083,9 +1083,9 @@ function dartPress(v){
     if(newCharges>=3){
       G.effects.dodge=1.0;G.effects.dodgeCharges=0;
       DI.darts[DI.darts.length-1].chargeActivated=true;
-      addFeedItem({icon:'🌀',text:(G.players[G.currentPlayer]?.name||'')+` — Esquive`+(isGolden?' 🎯':''),val:`3/3 charges — Esquive prête !`,fc:'dodge'});
+      addFeedItem({icon:'🌀',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Esquive'+(isGolden?' 🎯':''),sector:v,val:`3/3 charges — Esquive prête !`,fc:'dodge'});
     } else {
-      addFeedItem({icon:'🌀',text:(G.players[G.currentPlayer]?.name||'')+` — Esquive`+(isGolden?' 🎯':''),val:`${'🌀'.repeat(newCharges)} ${newCharges}/3 charges`,fc:'dodge'});
+      addFeedItem({icon:'🌀',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Esquive'+(isGolden?' 🎯':''),sector:v,val:`${'🌀'.repeat(newCharges)} ${newCharges}/3 charges`,fc:'dodge'});
     }
     renderEffectsMini();
   }
@@ -1094,7 +1094,7 @@ function dartPress(v){
     DI.darts[DI.darts.length-1].prevTeamFire=prevTeamFire;
     G.effects.teamFire=0;
     updatePVBars();
-    addFeedItem({icon:'💧',text:(G.players[G.currentPlayer]?.name||'')+' — Eau'+(isGolden?' 🎯':''),val:prevTeamFire>0?'Feu ennemi éteint !':'Aucun feu actif',fc:'dodge'});
+    addFeedItem({icon:'💧',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Eau'+(isGolden?' 🎯':''),sector:v,val:prevTeamFire>0?'Feu ennemi éteint !':'Aucun feu actif',fc:'dodge'});
     renderEffectsMini();
   }
   if(aef.type==='brise'){
@@ -1104,7 +1104,7 @@ function dartPress(v){
     DI.darts[DI.darts.length-1].actualArmorRemoved=removed;
     const restant=G.effects.armor;
     const feedVal=removed>0?(restant>0?'🛡️'.repeat(restant)+' −'+(restant*20)+'%':' Armure brisée !'):'Aucun bouclier à briser';
-    addFeedItem({icon:'⚒️',text:(G.players[G.currentPlayer]?.name||'')+' — Brise-Bouclier',val:feedVal,fc:'brise'});
+    addFeedItem({icon:'⚒️',player:(G.players[G.currentPlayer]?.name||''),mult:m,action:'Brise-Bouclier',sector:v,val:feedVal,fc:'brise'});
     if(aef.bonus&&aef.bonus.type==='heal_team'&&removed>0){
       G.teamPV=Math.min(G.teamPVMax,G.teamPV+aef.bonus.val);
       G.stats.heals+=aef.bonus.val;
@@ -1143,7 +1143,17 @@ function dartPress(v){
   else if(isGolden&&G.goldenDartsRemaining===0){finishPlayerTurn();}
 }
 
+function multLabel(m){return m===1?'Simple':m===2?'Double':'Triple';}
+
+// f.text pre-construit est utilise tel quel ; sinon on assemble
+// "[Joueur] — [Multiplicateur] [Action] — Secteur [X]" a partir des champs structures.
 function addFeedItem(f){
+  if(f.text==null){
+    let t=f.player||'';
+    t+=' — '+(f.mult?multLabel(f.mult)+' ':'')+(f.action||'');
+    if(f.sector!=null) t+=' — Secteur '+f.sector;
+    f.text=t;
+  }
   G.liveFeed.push(f);
   if(G.liveFeed.length>3)G.liveFeed.shift();
   const el=document.getElementById('live-feed');
