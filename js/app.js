@@ -922,14 +922,17 @@ function startGame(){
   initDI();renderGameUI();nav('game');
 }
 
-// Mode info du Grimoire : assombrit l'ecran de jeu et rend la cible consultable
+// Mode info du Grimoire : assombrit uniquement la cible et la rend consultable
 // (clic sur un secteur -> popup Simple/Double/Triple) sans lancer de flechette.
 function toggleInfoMode(){
   G.infoMode=!G.infoMode;
-  const screen=document.getElementById('screen-game');
-  if(screen) screen.style.opacity=G.infoMode?'0.4':'';
+  const cible=document.getElementById('cible-svg');
+  if(cible) cible.style.opacity=G.infoMode?'0.4':'';
   const btn=document.getElementById('grimoire-btn');
-  if(btn) btn.classList.toggle('active',G.infoMode);
+  if(btn){
+    btn.classList.toggle('active',G.infoMode);
+    btn.textContent=G.infoMode?'✕':'📖';
+  }
   if(!G.infoMode) hideMiniRef();
 }
 function showSectorInfo(num){
