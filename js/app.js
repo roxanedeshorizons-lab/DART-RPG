@@ -1365,6 +1365,13 @@ function flashEl(el,baseColor){
   setTimeout(()=>el.setAttribute('fill',baseColor),180);
 }
 
+// Illumination supplementaire des anneaux Double/Triple au clic (en plus du flash standard)
+function illuminateRing(el){
+  el.setAttribute('stroke','#ffd700');
+  el.setAttribute('stroke-width','3');
+  setTimeout(()=>{el.setAttribute('stroke','#333');el.setAttribute('stroke-width','0.5');},280);
+}
+
 function renderCible(){
   const svgEl=document.getElementById('cible-svg');
   if(!svgEl)return;
@@ -1423,12 +1430,12 @@ function renderCible(){
 
     const te=mkEl('path',{d:arc(i,R.tripleIn,R.tripleOut),fill:tripleFill,stroke:'#333','stroke-width':'0.5'});
     te.style.cursor='pointer';
-    te.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(te,tripleFill);dartPress(num);});
+    te.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(te,tripleFill);illuminateRing(te);dartPress(num);});
     svgEl.appendChild(te);
 
     const de=mkEl('path',{d:arc(i,R.doubleIn,R.doubleOut),fill:doubleFill,stroke:'#333','stroke-width':'0.5'});
     de.style.cursor='pointer';
-    de.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(de,doubleFill);dartPress(num);});
+    de.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(de,doubleFill);illuminateRing(de);dartPress(num);});
     svgEl.appendChild(de);
 
     if(c&&c.icon){
