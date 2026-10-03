@@ -1026,7 +1026,9 @@ function dartPress(v){
     if(DI.darts.length>=maxDarts){finishPlayerTurn();}
     return;
   }
-  const ak=getAction(v);
+  let ak=getAction(v);
+  // Triple sur attaque faible -> Meteorite (100 PV fixe), sur tous les boss, meme secteur
+  if(ak==='atk_faible'&&m===3) ak='meteorite';
   const ad=ACTIONS[ak];
   if(!ad)return;
   const ml=m===1?'simple':m===2?'double':'triple';
@@ -2300,7 +2302,7 @@ function showMiniRef(key){
     :
       '<div class="ref-effect"><span class="ref-tag s">Simple</span>'+colorDesc(a.simple.desc)+'</div>'+
       '<div class="ref-effect"><span class="ref-tag d">Double</span>'+colorDesc(a.double.desc)+'</div>'+
-      '<div class="ref-effect"><span class="ref-tag t">Triple</span>'+colorDesc(a.triple.desc)+'</div>'
+      '<div class="ref-effect"><span class="ref-tag t">Triple</span>'+(key==='atk_faible'?'☄️ '+colorDesc(ACTIONS.meteorite.triple.desc)+' (Météorite)':colorDesc(a.triple.desc))+'</div>'
     );
   pop.style.display='block';
   pop.dataset.key=key;
