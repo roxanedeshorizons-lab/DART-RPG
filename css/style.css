@@ -147,7 +147,8 @@ html[data-theme="dark"] .feed-item.atk .feed-val{color:#e06060;}
 .mri{display:flex;align-items:center;gap:4px;border-radius:7px;padding:5px 8px;font-size:16px;cursor:pointer;user-select:none;border:1px solid transparent;}
 .mri span,.mri-num{font-family:'Cinzel',serif!important;font-size:14px!important;font-weight:700!important;line-height:1!important;vertical-align:middle!important;}
 .mri:active{opacity:.7;}
-.mini-ref-popup{display:none;margin-bottom:7px;background:var(--bg2);border:1px solid var(--gold-border);border-radius:10px;padding:10px 12px;font-size:12px;cursor:pointer;}
+.mini-ref-popup{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:88%;max-width:360px;z-index:500;background:var(--bg2);border:1px solid var(--gold-border);border-radius:10px;padding:14px 16px;font-size:12px;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,.35);opacity:1;}
+#grimoire-btn.active{border-color:var(--gold-border);color:var(--gold);background:var(--gold-dim);}
 .mod-row{display:flex;gap:5px;margin-bottom:7px;}
 .mod-btn{flex:1;height:38px;border-radius:9px;background:var(--bg2);border:1px solid var(--border);font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
 .mod-btn.active{background:var(--gold-dim);border-color:var(--gold-border);color:var(--gold);}

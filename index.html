@@ -65,9 +65,11 @@
     </div>
     <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
       <button id="item-game-btn" class="item-game-btn" onclick="openItemPicker()">📦 Objet (0)</button>
-      <button class="item-game-btn" onclick="showRef()" title="Grimoire">📖</button>
+      <button id="grimoire-btn" class="item-game-btn" onclick="toggleInfoMode()" title="Grimoire — mode info">📖</button>
     </div>
   </div>
+
+  <div id="mini-ref-popup" class="mini-ref-popup"></div>
 
   <!-- Barres PV + effets (sticky en haut) -->
   <div class="pv-section">

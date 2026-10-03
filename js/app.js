@@ -681,6 +681,7 @@ let G={
   turnQueue:[0,1],turnIndex:0,cycleStart:0,slotDarts:[[],[]],slotDone:[false,false],
   effects:{shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0},
   goldenDartsRemaining:0,bossShield:0,liveFeed:[],finalScore:0,
+  infoMode:false,
   inventory:[],inventorySlots:3,
   activeBoostNext:false,activeResurr:false,activeBouclierItem:false,
   inputLocked:false,isUndoing:false,playerEditor:null,secretTaps:0,xavierTaps:0,
@@ -917,7 +918,22 @@ function startGame(){
   buildSectorMap(G.selectedBoss);
   G.bossShield=0;G.rageAtRoundStart={active:false,dur:0};G.rage={has1:false,has2:false,active:false,dur:0};
   G.stats={biggestHit:0,totalDmg:0,totalDmgTaken:0,heals:0,startTime:Date.now()};
+  G.infoMode=false;
   initDI();renderGameUI();nav('game');
+}
+
+// Mode info du Grimoire : assombrit l'ecran de jeu et rend la cible consultable
+// (clic sur un secteur -> popup Simple/Double/Triple) sans lancer de flechette.
+function toggleInfoMode(){
+  G.infoMode=!G.infoMode;
+  const screen=document.getElementById('screen-game');
+  if(screen) screen.style.opacity=G.infoMode?'0.4':'';
+  const btn=document.getElementById('grimoire-btn');
+  if(btn) btn.classList.toggle('active',G.infoMode);
+  if(!G.infoMode) hideMiniRef();
+}
+function showSectorInfo(num){
+  showMiniRef(getAction(num));
 }
 
 // ============================================================
@@ -1397,17 +1413,17 @@ function renderCible(){
     const p2=arc(i,R.tripleOut,R.doubleIn);
     const se=mkEl('path',{d:p1+' '+p2,fill:simpleFill,stroke:'#333','stroke-width':'0.5'});
     se.style.cursor='pointer';
-    se.addEventListener('click',()=>{flashEl(se,simpleFill);dartPress(num);});
+    se.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(se,simpleFill);dartPress(num);});
     svgEl.appendChild(se);
 
     const te=mkEl('path',{d:arc(i,R.tripleIn,R.tripleOut),fill:tripleFill,stroke:'#333','stroke-width':'0.5'});
     te.style.cursor='pointer';
-    te.addEventListener('click',()=>{flashEl(te,tripleFill);dartPress(num);});
+    te.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(te,tripleFill);dartPress(num);});
     svgEl.appendChild(te);
 
     const de=mkEl('path',{d:arc(i,R.doubleIn,R.doubleOut),fill:doubleFill,stroke:'#333','stroke-width':'0.5'});
     de.style.cursor='pointer';
-    de.addEventListener('click',()=>{flashEl(de,doubleFill);dartPress(num);});
+    de.addEventListener('click',()=>{if(G.infoMode){showSectorInfo(num);return;}flashEl(de,doubleFill);dartPress(num);});
     svgEl.appendChild(de);
 
     if(c&&c.icon){
@@ -1431,13 +1447,13 @@ function renderCible(){
   // Bull (25)
   const bull=mkEl('circle',{cx:CX,cy:CY,r:R.bull,fill:BULL_COLOR,stroke:'#333','stroke-width':'0.8'});
   bull.style.cursor='pointer';
-  bull.addEventListener('click',()=>{flashEl(bull,BULL_COLOR);dartPress(25);});
+  bull.addEventListener('click',()=>{if(G.infoMode){showMiniRef('bull_miroir');return;}flashEl(bull,BULL_COLOR);dartPress(25);});
   svgEl.appendChild(bull);
 
   // Bullseye — tap force mod=2 (DBull)
   const bs=mkEl('circle',{cx:CX,cy:CY,r:R.bullseye,fill:BS_COLOR,stroke:'#333','stroke-width':'0.8'});
   bs.style.cursor='pointer';
-  bs.addEventListener('click',()=>{flashEl(bs,BS_COLOR);setMod(2);dartPress(25);});
+  bs.addEventListener('click',()=>{if(G.infoMode){showMiniRef('bull_dore');return;}flashEl(bs,BS_COLOR);setMod(2);dartPress(25);});
   svgEl.appendChild(bs);
 
   // Numéros
@@ -2219,6 +2235,8 @@ function getCurrentSector(key){
 
 function showMiniRef(key){
   const pop=document.getElementById('mini-ref-popup');
+  if(!pop)return;
+  pop.onclick=()=>{pop.style.display='none';};
   if(key==='eau'){
     if(pop.style.display==='block'&&pop.dataset.key===key){pop.style.display='none';return;}
     const s=getBoss(G.selectedBoss).sectors;
