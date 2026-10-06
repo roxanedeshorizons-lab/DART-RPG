@@ -1743,10 +1743,14 @@ function renderPlayerRowHtml(slot){
     return `<div class="p-slot" style="background:var(--bg);color:#111">—</div>`;
   }).join('');
 
-  // Feedback rage dans la bande joueur actif : juste l'icone, sobre, quand la rage est active
+  // Feedback rage dans la bande joueur actif : 🟡 au 1er secteur touche, 🤬 une fois active
   let rageBadge='';
-  if(active&&G.rage.active){
-    rageBadge=`<div class="p-slot">🤬</div>`;
+  if(active){
+    if(G.rage.active){
+      rageBadge=`<div class="p-slot">🤬</div>`;
+    } else if(G.rage.has1||G.rage.has2){
+      rageBadge=`<div class="p-slot">🟡</div>`;
+    }
   }
 
   const popup = G.playerEditor === slot && Array.isArray(darts) && darts.length >= 3 ? `
