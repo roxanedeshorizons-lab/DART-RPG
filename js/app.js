@@ -939,6 +939,20 @@ function showSectorInfo(num){
   showMiniRef(getAction(num));
 }
 
+// Popup "RAGE ACTIVÉE !" — apparait quand le combo rage se declenche, disparait seule apres 1.5s
+let rageTimer=null;
+function showRagePopup(){
+  const pop=document.getElementById('rage-popup');
+  if(!pop)return;
+  if(rageTimer){clearTimeout(rageTimer);rageTimer=null;}
+  pop.style.display='flex';
+  requestAnimationFrame(()=>pop.classList.add('visible'));
+  rageTimer=setTimeout(()=>{
+    pop.classList.remove('visible');
+    setTimeout(()=>{pop.style.display='none';},250);
+  },1500);
+}
+
 // ============================================================
 // DART INPUT
 // ============================================================
@@ -1148,6 +1162,7 @@ function dartPress(v){
   if(G.rage.has1&&G.rage.has2){
     G.rage.active=true;G.rage.dur=2;
     addFeedItem({icon:'🤬',text:'Combo Rage activé ! ('+rageS[0]+'+'+rageS[1]+')',val:'Dégâts ×2 pendant 2 manches',fc:'rage'});
+    if(!G._rageComboShown){G._rageComboShown=true;showRagePopup();}
   }
 
   renderStrip();
@@ -1499,6 +1514,7 @@ function renderGameUI(){
   G.bossPVRoundStart=G.bossPV;G.teamPVAtRoundStart=G.teamPV;
   G.fireAtRoundStart={stacks:0,dur:0,dmgPerStack:3};
   G.rage={has1:false,has2:false,active:G.rageAtRoundStart.active,dur:G.rageAtRoundStart.dur};
+  G._rageComboShown=false;
   const feedEl=document.getElementById('live-feed');
   if(feedEl)feedEl.innerHTML='';
   const lat=document.getElementById('last-action-text');
@@ -1722,6 +1738,18 @@ function renderPlayerRowHtml(slot){
     return `<div class="p-slot" style="background:var(--bg);color:#111">—</div>`;
   }).join('');
 
+  // Feedback rage dans la bande joueur actif : progression du combo puis etat "deja actif"
+  let rageBadge='';
+  if(active){
+    if(G.rage.has1&&G.rage.has2){
+      rageBadge=`<div class="p-slot" style="background:#e8a03033;border:1px solid #e8a030;color:#e8a030;font-weight:700">✨🟠🟠✨</div>`;
+    } else if(G.rage.has1||G.rage.has2){
+      rageBadge=`<div class="p-slot" style="background:#f0d00022;border:1px solid #f0d000;color:#f0d000">🟡</div>`;
+    } else if(G.rage.active){
+      rageBadge=`<div class="p-slot" style="background:#e8a03022;border:1px solid #e8a030;color:#e8a030;font-weight:700">🤬×2</div>`;
+    }
+  }
+
   const popup = G.playerEditor === slot && Array.isArray(darts) && darts.length >= 3 ? `
     <div class="player-edit-popup" style="display:flex;align-items:flex-end;gap:8px;padding:6px 8px;margin:0 0 6px 0;background:var(--popup-bg);border:1px solid var(--popup-border);border-radius:9px;box-shadow:0 10px 20px rgba(0,0,0,.25);max-width:100%;overflow-x:auto;white-space:nowrap;position:relative;">
       ${darts.map((d,idx)=>`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;min-width:48px;padding:4px 6px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:7px;">
@@ -1740,7 +1768,7 @@ function renderPlayerRowHtml(slot){
         <span>${p.name}</span>
         ${showActiveEditButton ? `<button class="player-edit-btn" onclick="event.stopPropagation();openPlayerEditMenu(${slot});" style="background:var(--edit-btn-bg);border:1px solid var(--edit-btn-border);border-radius:8px;padding:2px 6px;color:var(--edit-btn-color);cursor:pointer;font-size:12px;line-height:1.2">✏️</button>` : ''}
       </div>
-      <div class="p-slots" style="flex-wrap:wrap;display:flex;gap:4px;justify-content:flex-end;flex:1;min-width:0">${slots}</div>
+      <div class="p-slots" style="flex-wrap:wrap;display:flex;gap:4px;justify-content:flex-end;flex:1;min-width:0">${slots}${rageBadge}</div>
     </div>
   </div>`;
 }
@@ -2185,6 +2213,7 @@ function endRound(bossDmg){
   G.slotDone = [false, false];
   G.currentPlayer = G.turnQueue[G.cycleStart];
   G.rage = {has1:false, has2:false, active:G.rageAtRoundStart.active, dur:G.rageAtRoundStart.dur};
+  G._rageComboShown = false;
   G.playerEditor = null;
   DI = {mod:1,darts:[]};
   G.goldenDartsRemaining = 0;
