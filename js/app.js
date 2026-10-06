@@ -1743,16 +1743,10 @@ function renderPlayerRowHtml(slot){
     return `<div class="p-slot" style="background:var(--bg);color:#111">—</div>`;
   }).join('');
 
-  // Feedback rage dans la bande joueur actif : progression du combo puis etat "deja actif"
+  // Feedback rage dans la bande joueur actif : juste l'icone, sobre, quand la rage est active
   let rageBadge='';
-  if(active){
-    if(G.rage.has1&&G.rage.has2){
-      rageBadge=`<div class="p-slot" style="background:#e8a03033;border:1px solid #e8a030;color:#e8a030;font-weight:700">✨🟠🟠✨</div>`;
-    } else if(G.rage.has1||G.rage.has2){
-      rageBadge=`<div class="p-slot" style="background:#f0d00022;border:1px solid #f0d000;color:#f0d000">🟡</div>`;
-    } else if(G.rage.active){
-      rageBadge=`<div class="p-slot" style="background:#e8a03022;border:1px solid #e8a030;color:#e8a030;font-weight:700">🤬×2</div>`;
-    }
+  if(active&&G.rage.active){
+    rageBadge=`<div class="p-slot">🤬</div>`;
   }
 
   const popup = G.playerEditor === slot && Array.isArray(darts) && darts.length >= 3 ? `
