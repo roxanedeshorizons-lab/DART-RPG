@@ -1441,10 +1441,12 @@ function renderCible(){
     if(c&&c.icon){
       const iconR=(R.tripleOut+R.doubleIn)/2;
       const[ix,iy]=pt(i*18,iconR);
-      // Icone multi-emojis (ex: 🗡️🗡️🗡️) -> police plus petite + letter-spacing negatif pour rester dans le secteur
-      const isMulti=c.icon.replace(/️/g,'').length>2;
-      const iconAttrs={x:ix.toFixed(2),y:iy.toFixed(2),'text-anchor':'middle','dominant-baseline':'central','font-size':isMulti?'10':'15','pointer-events':'none'};
-      if(isMulti) iconAttrs['letter-spacing']='-2';
+      // Icone a 3 emojis (ex: 🗡️🗡️🗡️) -> meme taille que les autres, juste rapprochee
+      // via letter-spacing negatif pour tenir dans le secteur (mesure : -9 ramene sa largeur
+      // au niveau de l'icone a 2 emojis, qui elle tient deja sans ajustement).
+      const isTriple=c.icon.replace(/️/g,'').length>4;
+      const iconAttrs={x:ix.toFixed(2),y:iy.toFixed(2),'text-anchor':'middle','dominant-baseline':'central','font-size':'15','pointer-events':'none'};
+      if(isTriple) iconAttrs['letter-spacing']='-9';
       const ic=mkEl('text',iconAttrs);
       ic.textContent=c.icon;
       svgEl.appendChild(ic);
