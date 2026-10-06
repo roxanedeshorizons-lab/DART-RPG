@@ -1284,7 +1284,12 @@ function finishPlayerTurn(){
   if(G.turnIndex>=G.turnQueue.length)G.turnIndex=0;
 
   if(slot===0){
-    G.currentPlayer=G.turnQueue[G.turnIndex];
+    const prevPlayer=G.currentPlayer;
+    const nextPlayer=G.turnQueue[G.turnIndex];
+    // Le combo rage ne compte que si les 2 secteurs sont touches par le MEME joueur :
+    // changement de joueur -> on remet has1/has2 a zero (sauf en solo, meme joueur aux 2 tours).
+    if(nextPlayer!==prevPlayer){G.rage.has1=false;G.rage.has2=false;}
+    G.currentPlayer=nextPlayer;
     DI={mod:1,darts:[]};
     G.goldenDartsRemaining=0;
     G.inputLocked=false;
