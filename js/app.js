@@ -1190,12 +1190,11 @@ function dartPress(v){
 function multLabel(m){return m===1?'Simple':m===2?'Double':'Triple';}
 
 // f.text pre-construit est utilise tel quel ; sinon on assemble
-// "[Joueur] — [Multiplicateur] [Action] — Secteur [X]" a partir des champs structures.
+// "[Joueur] — [Multiplicateur] [Action]" a partir des champs structures.
 function addFeedItem(f){
   if(f.text==null){
     let t=f.player||'';
     t+=' — '+(f.mult?multLabel(f.mult)+' ':'')+(f.action||'');
-    if(f.sector!=null) t+=' — Secteur '+f.sector;
     f.text=t;
   }
   G.liveFeed.push(f);
