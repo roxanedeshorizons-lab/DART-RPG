@@ -1441,7 +1441,11 @@ function renderCible(){
     if(c&&c.icon){
       const iconR=(R.tripleOut+R.doubleIn)/2;
       const[ix,iy]=pt(i*18,iconR);
-      const ic=mkEl('text',{x:ix.toFixed(2),y:iy.toFixed(2),'text-anchor':'middle','dominant-baseline':'central','font-size':'15','pointer-events':'none'});
+      // Icone multi-emojis (ex: 🗡️🗡️🗡️) -> police plus petite + letter-spacing negatif pour rester dans le secteur
+      const isMulti=c.icon.replace(/️/g,'').length>2;
+      const iconAttrs={x:ix.toFixed(2),y:iy.toFixed(2),'text-anchor':'middle','dominant-baseline':'central','font-size':isMulti?'10':'15','pointer-events':'none'};
+      if(isMulti) iconAttrs['letter-spacing']='-2';
+      const ic=mkEl('text',iconAttrs);
       ic.textContent=c.icon;
       svgEl.appendChild(ic);
     }
