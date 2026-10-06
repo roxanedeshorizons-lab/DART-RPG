@@ -1078,7 +1078,11 @@ function dartPress(v){
     if(dmg>G.stats.biggestHit)G.stats.biggestHit=dmg;
     G.stats.totalDmg+=dmg;
     const armorSuffix=G.effects.armor>0?' (armure −'+getArmorReduc()+'%)':'';
-    addFeedItem({icon:ad.icon,player:(G.players[G.currentPlayer]?.name||''),mult:m,action:ad.name+goldSuffix,sector:v,val:'−'+dmg+' PV boss'+armorSuffix,fc:'atk'});
+    if(rageMulti===2){
+      addFeedItem({icon:'🤬',text:'RAGE ×2',val:'−'+dmg+' PV boss'+armorSuffix,fc:'rage'});
+    } else {
+      addFeedItem({icon:ad.icon,player:(G.players[G.currentPlayer]?.name||''),mult:m,action:ad.name+goldSuffix,sector:v,val:'−'+dmg+' PV boss'+armorSuffix,fc:'atk'});
+    }
     updatePVBars();
   }
   if(aef.type==='heal_team'){
@@ -1159,10 +1163,14 @@ function dartPress(v){
   }
 
   // Check rage combo active — active pendant 2 manches, rafraichi si retouche les 2 secteurs
+  // Message + popup une seule fois par declenchement (sinon ca spamme a chaque flechette suivante)
   if(G.rage.has1&&G.rage.has2){
     G.rage.active=true;G.rage.dur=2;
-    addFeedItem({icon:'🤬',text:'Combo Rage activé ! ('+rageS[0]+'+'+rageS[1]+')',val:'Dégâts ×2 pendant 2 manches',fc:'rage'});
-    if(!G._rageComboShown){G._rageComboShown=true;showRagePopup();}
+    if(!G._rageComboShown){
+      G._rageComboShown=true;
+      addFeedItem({icon:'🤬',text:'Combo Rage activé ! ('+rageS[0]+'+'+rageS[1]+')',val:'Dégâts ×2 pendant 2 manches',fc:'rage'});
+      showRagePopup();
+    }
   }
 
   renderStrip();
