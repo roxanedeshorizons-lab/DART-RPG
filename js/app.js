@@ -261,32 +261,32 @@ function closeTuto(){
 document.getElementById('tuto-ov').addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
 
 // ============================================================
-// TUTO CONTEXTUEL (combat) — popup non bloquant, une fois par fonctionnalité
+// TUTO CONTEXTUEL (combat) — popup bloquant, une fois par fonctionnalité
 // ============================================================
-// Les popups demandés pendant qu'un autre est affiché attendent leur tour.
+// Le popup reste affiché jusqu'au clic sur OK. Ceux demandés pendant qu'un
+// autre est affiché attendent leur tour.
 const tutoPopQueue=[];
-let tutoPopTimer=null;
+let tutoPopOpen=false;
 function tutoPopup(key,icon,text){
   if(tutoDejaVu(key))return;
   marquerTutoVu(key);
   tutoPopQueue.push({icon,text});
-  if(!tutoPopTimer)showNextTutoPop();
+  if(!tutoPopOpen)showNextTutoPop();
 }
 function showNextTutoPop(){
-  const pop=document.getElementById('tuto-pop');
+  const ov=document.getElementById('tuto-pop-ov');
   const next=tutoPopQueue.shift();
-  if(!pop||!next){ tutoPopTimer=null; return; }
+  if(!ov||!next){ tutoPopOpen=false; if(ov)ov.classList.remove('visible'); return; }
+  tutoPopOpen=true;
   document.getElementById('tuto-pop-icon').textContent=next.icon;
   document.getElementById('tuto-pop-text').textContent=next.text;
-  pop.classList.add('visible');
-  tutoPopTimer=setTimeout(hideTutoPop,3000);
+  ov.classList.add('visible');
 }
 function hideTutoPop(){
-  const pop=document.getElementById('tuto-pop');
-  if(pop)pop.classList.remove('visible');
-  clearTimeout(tutoPopTimer);
-  tutoPopTimer=setTimeout(showNextTutoPop,300);
+  showNextTutoPop();
 }
+// Les swipes sur le popup ne doivent pas ouvrir le bandeau / le grimoire derrière
+document.getElementById('tuto-pop-ov').addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
 // Appelé après chaque fléchette avec l'action réellement jouée
 function tutoSecteur(ak,ef,v,isRage){
   if(isRage)tutoPopup('tuto_rage','🤬','Rage — Touche les 2 secteurs rage dans la même manche pour ×2 !');

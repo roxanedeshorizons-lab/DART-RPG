@@ -346,11 +346,13 @@
   </div>
 </div>
 
-<!-- TUTO CONTEXTUEL (combat) : ne bloque pas le jeu -->
-<div class="tuto-pop" id="tuto-pop" onclick="hideTutoPop()">
-  <div class="tuto-pop-icon" id="tuto-pop-icon"></div>
-  <div class="tuto-pop-text" id="tuto-pop-text"></div>
-  <button class="tuto-pop-btn">OK !</button>
+<!-- TUTO CONTEXTUEL (combat) : bloque le jeu jusqu'au clic sur OK -->
+<div class="tuto-pop-ov" id="tuto-pop-ov">
+  <div class="tuto-pop" id="tuto-pop">
+    <div class="tuto-pop-icon" id="tuto-pop-icon"></div>
+    <div class="tuto-pop-text" id="tuto-pop-text"></div>
+    <button class="tuto-pop-btn" onclick="hideTutoPop()">OK !</button>
+  </div>
 </div>
 
 </div>
