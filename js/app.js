@@ -2332,6 +2332,7 @@ function endRound(bossDmg){
   renderStrip();
   updatePVBars();
   renderEffectsMini();
+  tutoPopup('tuto_grimoire','📖','Grimoire — Appuie sur le bouton Grimoire en haut à droite pour voir ce que fait chaque secteur de la cible !');
 }
 
 // ============================================================
