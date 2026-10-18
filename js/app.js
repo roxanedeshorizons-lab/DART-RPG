@@ -213,18 +213,28 @@ function renderThemeToggle(){
 // ============================================================
 // TUTO (premier lancement)
 // ============================================================
+// Fonctionnalités déjà vues, stockées dans un seul objet : {intro:true, tuto_cible:true, ...}
 const TUTO_STORAGE_KEY='tutoVu';
+const TUTO_VU=(()=>{
+  let raw=null;
+  try{ raw=localStorage.getItem(TUTO_STORAGE_KEY); }catch(e){}
+  if(raw==='true')return {intro:true}; // ancien format : tuto de premier lancement déjà vu
+  try{ const o=JSON.parse(raw||'{}'); return o&&typeof o==='object'?o:{}; }catch(e){ return {}; }
+})();
+function marquerTutoVu(key){
+  TUTO_VU[key]=true;
+  try{ localStorage.setItem(TUTO_STORAGE_KEY,JSON.stringify(TUTO_VU)); }catch(e){}
+}
+function tutoDejaVu(key){ return !!TUTO_VU[key]; }
 const TUTO_SLIDES=[
-  {icon:'🎯',title:'Lance et Survis',text:'Un jeu RPG qui se joue avec une vraie cible de fléchettes !'},
+  {icon:'🎯',title:'Dart RPG',text:'Un jeu RPG qui se joue avec une vraie cible de fléchettes !'},
   {icon:'🏹',title:'Comment jouer ?',text:"Lance tes fléchettes sur ta vraie cible, puis reporte le résultat dans l'appli."},
   {icon:'📱',title:"La cible dans l'appli",text:"La cible affichée est un référentiel — elle t'indique quels secteurs font quoi selon le boss."},
   {icon:'⚔️',title:'Bonne chance !',text:'Choisis un boss et affronte-le avec ton équipe ! (ou seul.e)',btn:"Commencer l'aventure"}
 ];
 let tutoIdx=0;
 function showTutoIfFirstLaunch(){
-  let vu=false;
-  try{ vu=localStorage.getItem(TUTO_STORAGE_KEY)==='true'; }catch(e){}
-  if(!vu)showTuto();
+  if(!tutoDejaVu('intro'))showTuto();
 }
 function showTuto(){
   tutoIdx=0;
@@ -245,10 +255,52 @@ function nextTuto(){
 }
 function closeTuto(){
   document.getElementById('tuto-ov').classList.remove('visible');
-  try{ localStorage.setItem(TUTO_STORAGE_KEY,'true'); }catch(e){}
+  marquerTutoVu('intro');
 }
 // Les swipes dans le tuto ne doivent pas ouvrir le bandeau / le grimoire derrière
 document.getElementById('tuto-ov').addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
+
+// ============================================================
+// TUTO CONTEXTUEL (combat) — popup non bloquant, une fois par fonctionnalité
+// ============================================================
+// Les popups demandés pendant qu'un autre est affiché attendent leur tour.
+const tutoPopQueue=[];
+let tutoPopTimer=null;
+function tutoPopup(key,icon,text){
+  if(tutoDejaVu(key))return;
+  marquerTutoVu(key);
+  tutoPopQueue.push({icon,text});
+  if(!tutoPopTimer)showNextTutoPop();
+}
+function showNextTutoPop(){
+  const pop=document.getElementById('tuto-pop');
+  const next=tutoPopQueue.shift();
+  if(!pop||!next){ tutoPopTimer=null; return; }
+  document.getElementById('tuto-pop-icon').textContent=next.icon;
+  document.getElementById('tuto-pop-text').textContent=next.text;
+  pop.classList.add('visible');
+  tutoPopTimer=setTimeout(hideTutoPop,3000);
+}
+function hideTutoPop(){
+  const pop=document.getElementById('tuto-pop');
+  if(pop)pop.classList.remove('visible');
+  clearTimeout(tutoPopTimer);
+  tutoPopTimer=setTimeout(showNextTutoPop,300);
+}
+// Appelé après chaque fléchette avec l'action réellement jouée
+function tutoSecteur(ak,ef,v,isRage){
+  if(isRage)tutoPopup('tuto_rage','🤬','Rage — Touche les 2 secteurs rage dans la même manche pour ×2 !');
+  if(ak==='soin')tutoPopup('tuto_soin','💚',"Soin — L'équipe se soigne de "+ef.val+' PV !');
+  else if(ak==='atk_faible'||ak==='atk_moyenne'||ak==='atk_forte')tutoPopup('tuto_atk','🗡️',"Attaque — L'équipe inflige "+ef.val+' dégâts au boss !');
+  else if(ak==='bouclier')tutoPopup('tuto_bouclier','🛡️','Bouclier — Absorbe les prochains dégâts du boss !');
+  else if(ak==='feu')tutoPopup('tuto_feu','🔥','Feu — Inflige '+(ef.val*(G.effects.fire.dmgPerStack||3))+' PV/manche au boss pendant 2 manches !');
+  else if(ak==='esquive')tutoPopup('tuto_esquive','🌀','Esquive — Accumule 3 charges pour esquiver la prochaine attaque !');
+  else if(ak==='eau')tutoPopup('tuto_eau','💧',"Eau — Éteint le feu ennemi sur l'équipe !");
+  else if(ak==='brise')tutoPopup('tuto_brise','⚒️','Brise-bouclier — Casse les boucliers du boss !');
+  else if(ak==='bull_miroir')tutoPopup('tuto_bull','🫧','Bull — Si feu actif : stacks ×2 ! Sinon : −20 PV au boss.');
+  else if(ak==='bull_dore')tutoPopup('tuto_bullseye','🎯','Bullseye — +3 fléchettes dorées ×1.3 !');
+  else if(ak==='meteorite')tutoPopup('tuto_meteorite','☄️','Météorite — Triple attaque légère : 100 PV directs !');
+}
 
 function defaultCustomPattern(teamPV){
   const round5=n=>Math.max(5,Math.round(n/5)*5);
@@ -960,6 +1012,7 @@ function startGame(){
   G.stats={biggestHit:0,totalDmg:0,totalDmgTaken:0,heals:0,startTime:Date.now()};
   G.infoMode=false;
   initDI();renderGameUI();nav('game');
+  tutoPopup('tuto_cible','🎯','Reporte ton score sur la cible virtuelle !');
 }
 
 // Mode info du Grimoire : assombrit uniquement la cible et la rend consultable
@@ -1065,6 +1118,7 @@ function dartPress(v){
       updatePVBars();
     }
     DI.darts.push({value:v,multi:m,label,ak:'bull_miroir',ef:mef,ad:{feedClass:'special'},dartIcon:'🫧',dartName:'Miroir',golden:false});
+    tutoSecteur('bull_miroir',mef,v,false);
     setMod(1);renderStrip();
     if(G.bossPV<=0){setTimeout(()=>showEnd(true),400);return;}
     if(DI.darts.length>=maxDarts){finishPlayerTurn();}
@@ -1076,6 +1130,7 @@ function dartPress(v){
     G.goldenDartsRemaining=3;
     addFeedItem({icon:'🎯',text:(G.players[G.currentPlayer]?.name||'')+' — Flechettes dorees !',val:'+3 flechettes x1.3',fc:'special'});
     DI.darts.push({value:v,multi:m,label,ak:'bull_dore',ef:{type:'bull_dore'},ad:{feedClass:'special'},dartIcon:'🎯',dartName:'Dorees',golden:false});
+    tutoSecteur('bull_dore',null,v,false);
     setMod(1);renderStrip();
     if(DI.darts.length>=maxDarts){finishPlayerTurn();}
     return;
@@ -1101,6 +1156,7 @@ function dartPress(v){
   if(rageS.length>1&&v===rageS[1]) G.rage.has2=true;
 
   DI.darts.push({value:v,multi:m,label,ak,ef:aef,ad,dartIcon,dartName,golden:isGolden});
+  tutoSecteur(ak,aef,v,rageS.includes(v));
   if(isGolden)G.goldenDartsRemaining--;
   setMod(1);
 
