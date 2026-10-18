@@ -50,6 +50,8 @@
         <span class="theme-switch-knob"></span>
       </button>
     </div>
+    <div class="section-lbl" style="padding:20px 0 8px">Aide</div>
+    <button class="btn-ghost" onclick="showTuto()">🎯 Revoir le tuto</button>
   </div>
 </div>
 
@@ -328,6 +330,20 @@
     <button onclick="hideRef()" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px 11px;font-size:12px;color:var(--muted);cursor:pointer;font-family:var(--font-body)">← Revenir sur le boss</button>
   </div>
   <div id="ref-content"></div>
+</div>
+
+<!-- TUTO (premier lancement) -->
+<div class="tuto-ov" id="tuto-ov">
+  <button class="tuto-skip" onclick="closeTuto()">Passer</button>
+  <div class="tuto-body">
+    <div class="tuto-icon" id="tuto-icon"></div>
+    <div class="tuto-title" id="tuto-title"></div>
+    <div class="tuto-text" id="tuto-text"></div>
+  </div>
+  <div class="tuto-foot">
+    <div class="tuto-dots" id="tuto-dots"></div>
+    <button class="btn-gold" id="tuto-next" onclick="nextTuto()">Suivant</button>
+  </div>
 </div>
 
 </div>

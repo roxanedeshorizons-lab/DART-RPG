@@ -63,6 +63,19 @@ body{font-family:var(--font-body);background:var(--bg);display:flex;justify-cont
 .theme-switch-knob{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--muted);transition:transform .2s ease,background .2s ease;}
 .theme-switch.on{background:var(--gold-dim);border-color:var(--gold-border);}
 .theme-switch.on .theme-switch-knob{transform:translateX(24px);background:var(--gold);}
+
+/* TUTO */
+.tuto-ov{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;height:100dvh;z-index:600;display:none;flex-direction:column;background:var(--bg);padding:20px 24px 32px;}
+.tuto-ov.visible{display:flex;}
+.tuto-skip{align-self:flex-end;background:none;border:none;font-family:var(--font-body);font-size:13px;color:var(--dim);cursor:pointer;padding:6px 4px;}
+.tuto-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;}
+.tuto-icon{font-size:72px;line-height:1;}
+.tuto-title{font-family:var(--font-title);font-size:38px;color:var(--gold);letter-spacing:.05em;line-height:1.1;}
+.tuto-text{font-size:15px;line-height:1.5;color:var(--text);max-width:320px;}
+.tuto-foot{display:flex;flex-direction:column;align-items:center;gap:18px;}
+.tuto-dots{display:flex;gap:10px;}
+.tuto-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:background .2s ease;}
+.tuto-dot.active{background:var(--gold);}
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--bg);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px 0 16px;z-index:100;}
 .nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;background:none;border:none;cursor:pointer;font-family:var(--font-body);}
 .nav-btn.active{color:var(--gold);}

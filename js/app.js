@@ -210,6 +210,46 @@ function renderThemeToggle(){
   if(sw){ sw.classList.toggle('on',isDark); sw.setAttribute('aria-checked',isDark?'true':'false'); }
 }
 
+// ============================================================
+// TUTO (premier lancement)
+// ============================================================
+const TUTO_STORAGE_KEY='tutoVu';
+const TUTO_SLIDES=[
+  {icon:'🎯',title:'Lance et Survis',text:'Un jeu RPG qui se joue avec une vraie cible de fléchettes !'},
+  {icon:'🏹',title:'Comment jouer ?',text:"Lance tes fléchettes sur ta vraie cible, puis reporte le résultat dans l'appli."},
+  {icon:'📱',title:"La cible dans l'appli",text:"La cible affichée est un référentiel — elle t'indique quels secteurs font quoi selon le boss."},
+  {icon:'⚔️',title:'Bonne chance !',text:'Choisis un boss et affronte-le avec ton équipe ! (ou seul.e)',btn:"Commencer l'aventure"}
+];
+let tutoIdx=0;
+function showTutoIfFirstLaunch(){
+  let vu=false;
+  try{ vu=localStorage.getItem(TUTO_STORAGE_KEY)==='true'; }catch(e){}
+  if(!vu)showTuto();
+}
+function showTuto(){
+  tutoIdx=0;
+  renderTuto();
+  document.getElementById('tuto-ov').classList.add('visible');
+}
+function renderTuto(){
+  const s=TUTO_SLIDES[tutoIdx];
+  document.getElementById('tuto-icon').textContent=s.icon;
+  document.getElementById('tuto-title').textContent=s.title;
+  document.getElementById('tuto-text').textContent=s.text;
+  document.getElementById('tuto-next').textContent=s.btn||'Suivant';
+  document.getElementById('tuto-dots').innerHTML=TUTO_SLIDES.map((_,i)=>'<span class="tuto-dot'+(i===tutoIdx?' active':'')+'"></span>').join('');
+}
+function nextTuto(){
+  if(tutoIdx<TUTO_SLIDES.length-1){ tutoIdx++; renderTuto(); }
+  else closeTuto();
+}
+function closeTuto(){
+  document.getElementById('tuto-ov').classList.remove('visible');
+  try{ localStorage.setItem(TUTO_STORAGE_KEY,'true'); }catch(e){}
+}
+// Les swipes dans le tuto ne doivent pas ouvrir le bandeau / le grimoire derrière
+document.getElementById('tuto-ov').addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
+
 function defaultCustomPattern(teamPV){
   const round5=n=>Math.max(5,Math.round(n/5)*5);
   const val=round5(teamPV*0.15);
@@ -2644,4 +2684,4 @@ function renderRessource(){
   if(sl)sl.textContent='Inventaire ('+G.inventory.length+' / '+G.inventorySlots+' slots)';
 }
 
-window.onload=()=>{loadTheme();loadCustomBosses();loadBossOverrides();renderHome();renderRef();nav('home');};
+window.onload=()=>{loadTheme();loadCustomBosses();loadBossOverrides();renderHome();renderRef();nav('home');showTutoIfFirstLaunch();};
