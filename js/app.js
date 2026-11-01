@@ -236,7 +236,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto3', nom:`Tuto 3 — Attaques moyennes et fortes`, icon:'🗡️🗡️🗡️', pv:60, teamPV:40, manches:16,
-    sectors: cyclicSectors(['atk_faible','atk_moyenne','atk_forte','gris']),
+    sectors:{ atk_faible:[1,5,6,9,11,13,14,19], atk_moyenne:[7,20], atk_forte:[2,4,16] },
     pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`}],
     intro:[
       {icon:'🗡️🗡️',text:`Nouvelle règle : les attaques moyennes !`,previewKey:'atk_moyenne'},
@@ -245,7 +245,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto4', nom:`Tuto 4 — Le soin`, icon:'💚', pv:70, teamPV:40, manches:18,
-    sectors: cyclicSectors(['atk_faible','atk_moyenne','atk_forte','soin','gris']),
+    sectors:{ soin:[1,3,6,11,16], atk_faible:[8], atk_forte:[9], atk_moyenne:[13,15,17,19,20] },
     pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`},{type:'atk',val:15,desc:`Le boss se déchaîne !`}],
     intro:[
       {icon:'💚',text:`Nouvelle règle : le soin ! Il rend des PV à toute l'équipe.`,previewKey:'soin'},
@@ -253,7 +253,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto5', nom:`Tuto 5 — Le bouclier`, icon:'🛡️', pv:80, teamPV:40, manches:20,
-    sectors: cyclicSectors(['atk_faible','atk_moyenne','atk_forte','soin','bouclier','gris']),
+    sectors:{ soin:[1,6,7,14], bouclier:[3,18,19], atk_faible:[10,15,17,20], atk_forte:[11,12] },
     pattern:[{type:'atk',val:10,desc:`Le boss attaque !`},{type:'atk',val:15,desc:`Le boss attaque plus fort !`},{type:'atk',val:20,desc:`Le boss se déchaîne !`}],
     intro:[
       {icon:'🛡️',text:`Nouvelle règle : le bouclier ! Les boucliers s'additionnent et absorbent les dégâts du boss avant les PV de l'équipe.`,previewKey:'bouclier'},
