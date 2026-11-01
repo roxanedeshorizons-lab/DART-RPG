@@ -535,7 +535,17 @@ function tutoShowDefeat(){
 }
 function showTutoIfFirstLaunch(){
   if(tutoDejaVu('tuto_intro_done'))return;
+  // Un joueur qui a deja l'ancienne cle "intro", des boss customs ou des boss modifies
+  // dans le Labo a deja utilise l'appli : on ne lui impose pas le tuto.
+  const dejaJoueur=tutoDejaVu('intro')
+    ||(G.customBosses&&G.customBosses.length>0)
+    ||(G.bossOverrides&&Object.keys(G.bossOverrides).length>0);
   marquerTutoVu('tuto_intro_done');
+  if(dejaJoueur){
+    // Debloque les 5 tutos d'un coup, rejouables depuis Reglages > Tutoriels
+    TUTO_BOSSES.forEach((_,i)=>tutoMarkCleared(i));
+    return;
+  }
   startTuto(0,{showSkip:true});
 }
 
