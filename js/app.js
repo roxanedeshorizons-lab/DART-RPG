@@ -253,6 +253,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto5', nom:`Tuto 5 — Le bouclier`, icon:'🛡️', pv:80, teamPV:40, manches:20,
+    victoireText:`Boss vaincu ! Vous pouvez maintenant jouer les vrais boss du jeu !`,
     sectors:{ soin:[1,6,7,14], bouclier:[3,18,19], atk_faible:[10,15,17,20], atk_forte:[11,12] },
     pattern:[{type:'atk',val:10,desc:`Le boss attaque !`},{type:'atk',val:15,desc:`Le boss attaque plus fort !`},{type:'atk',val:20,desc:`Le boss se déchaîne !`}],
     intro:[
@@ -514,8 +515,9 @@ function tutoShowVictory(){
   const idx=G.tuto.idx;
   tutoMarkCleared(idx);
   const hasNext=idx+1<TUTO_BOSSES.length;
+  const victoireText=TUTO_BOSSES[idx].victoireText||`Boss vaincu ! Bravo l'équipe !`;
   enqueueBlockingPopup({
-    icon:'🏆',text:`Boss vaincu ! Bravo l'équipe !`,
+    icon:'🏆',text:victoireText,
     btnLabel:hasNext?'Tuto suivant →':`Retour à l'accueil`,
     onOk:()=>{
       hideTutoPop();
