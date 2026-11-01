@@ -529,6 +529,117 @@ function showTutoIfFirstLaunch(){
   startTuto(0,{showSkip:true});
 }
 
+// ============================================================
+// MENU TUTORIELS (Reglages) — 1 clic = menu, 5 clics rapides = editeur
+// ============================================================
+let _tutoMenuTapCount=0;
+let _tutoMenuTapTimer=null;
+function tutoMenuButtonClick(){
+  _tutoMenuTapCount++;
+  clearTimeout(_tutoMenuTapTimer);
+  if(_tutoMenuTapCount>=5){
+    _tutoMenuTapCount=0;
+    openTutoEditor();
+    return;
+  }
+  _tutoMenuTapTimer=setTimeout(()=>{
+    if(_tutoMenuTapCount>0)openTutoMenu();
+    _tutoMenuTapCount=0;
+  },350);
+}
+function openTutoMenu(){
+  renderTutoMenu();
+  const ov=document.getElementById('tuto-menu-ov');
+  if(ov)ov.classList.add('active');
+}
+function closeTutoMenu(){
+  const ov=document.getElementById('tuto-menu-ov');
+  if(ov)ov.classList.remove('active');
+}
+function renderTutoMenu(){
+  const el=document.getElementById('tuto-menu-list');
+  if(!el)return;
+  el.innerHTML=TUTO_BOSSES.map((def,i)=>{
+    const unlocked=tutoIsUnlocked(i);
+    const cleared=G.tutoProgress.cleared.includes(i);
+    return `<div class="boss-item" style="opacity:${unlocked?1:0.55}">
+      <div class="boss-item-header">
+        <div class="boss-num">${def.icon}</div>
+        <div><div class="boss-item-name">${def.nom}${cleared?' ✅':''}</div><div class="boss-item-desc">${unlocked?'Boss '+def.pv+' PV — Équipe '+def.teamPV+' PV':'Verrouillé — termine le tuto précédent'}</div></div>
+      </div>
+      <div style="padding:8px 2px 2px">
+        <button class="btn-gold" style="height:38px" ${unlocked?'':'disabled'} onclick="closeTutoMenu();startTuto(${i})">${unlocked?'▶ Jouer':'🔒 Verrouillé'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function tutoMenuPlayAll(){
+  closeTutoMenu();
+  startTuto(0);
+}
+
+// ============================================================
+// MODE EDITEUR DE TUTOS — ouvre les boss de tuto dans le Labo + export JSON
+// ============================================================
+function openTutoEditor(){
+  renderTutoEditorList();
+  const area=document.getElementById('tuto-export-area');
+  if(area)area.style.display='none';
+  const ov=document.getElementById('tuto-editor-ov');
+  if(ov)ov.classList.add('active');
+}
+function closeTutoEditor(){
+  const ov=document.getElementById('tuto-editor-ov');
+  if(ov)ov.classList.remove('active');
+}
+function renderTutoEditorList(){
+  const el=document.getElementById('tuto-editor-list');
+  if(!el)return;
+  el.innerHTML=TUTO_BOSSES.map((def,i)=>{
+    const eff=tutoBossFor(i);
+    return `<div class="boss-item">
+      <div class="boss-item-header">
+        <div class="boss-num">${def.icon}</div>
+        <div><div class="boss-item-name">${def.nom}${eff.overridden?' <span class="labo-boss-badge" title="Modifié">⚗️</span>':''}</div><div class="boss-item-desc">Boss ${eff.pv} PV — Équipe ${eff.teamPV} PV</div></div>
+      </div>
+      <div class="boss-item-actions">
+        <button class="boss-labo-btn" onclick="openLaboForTuto('${def.id}')" title="Ouvrir dans le Labo">⚗️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+// Affiche/masque la zone d'export JSON (config effective : base + modifs du Labo)
+function toggleTutoExport(){
+  const area=document.getElementById('tuto-export-area');
+  const ta=document.getElementById('tuto-export-text');
+  if(!area||!ta)return;
+  const show=area.style.display==='none'||!area.style.display;
+  if(show){
+    const data=TUTO_BOSSES.map((_,i)=>tutoBossFor(i));
+    ta.value=JSON.stringify(data,null,2);
+    area.style.display='block';
+  } else {
+    area.style.display='none';
+  }
+}
+function copyTutoExport(){
+  const ta=document.getElementById('tuto-export-text');
+  if(!ta)return;
+  ta.select();
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ta.value).catch(()=>{ try{document.execCommand('copy');}catch(e3){} });
+    else document.execCommand('copy');
+  }catch(e){
+    try{ document.execCommand('copy'); }catch(e2){}
+  }
+  const btn=document.getElementById('tuto-export-copy-btn');
+  if(btn){
+    const original=btn.textContent;
+    btn.textContent='Copié !';
+    setTimeout(()=>{btn.textContent=original;},1200);
+  }
+}
+
 function defaultCustomPattern(teamPV){
   const round5=n=>Math.max(5,Math.round(n/5)*5);
   const val=round5(teamPV*0.15);
@@ -571,6 +682,12 @@ function openLabo(kind,sourceId){
     G.labo=existing
       ? {kind:'custom',sourceId:existing.id,nom:existing.nom,icon:existing.icon,bossPV:existing.pv,teamPV:existing.teamPV,sectors:sectorsToLaboMap(existing.sectors)}
       : newLaboState();
+  } else if(kind==='tuto'){
+    const tutoIdx=TUTO_BOSSES.findIndex(b=>b.id===sourceId);
+    const effective=tutoBossFor(tutoIdx);
+    G.labo=effective
+      ? {kind:'tuto',sourceId,nom:effective.nom,icon:effective.icon,bossPV:effective.pv,teamPV:effective.teamPV,sectors:sectorsToLaboMap(effective.sectors)}
+      : newLaboState();
   } else {
     G.labo=newLaboState();
   }
@@ -590,6 +707,10 @@ function openLaboForBoss(i){
   if(!b)return;
   openLabo(b.custom?'custom':'builtin', b.id);
 }
+function openLaboForTuto(id){
+  closeTutoEditor();
+  openLabo('tuto',id);
+}
 function closeLabo(){
   const ov=document.getElementById('labo-ov');
   if(ov)ov.classList.remove('active');
@@ -600,7 +721,7 @@ function renderLaboMeta(){
   const nomEl=document.getElementById('labo-nom');
   const pvEl=document.getElementById('labo-pv');
   const teamEl=document.getElementById('labo-teampv');
-  const locked=G.labo.kind==='builtin';
+  const locked=G.labo.kind==='builtin'||G.labo.kind==='tuto';
   if(nomEl){ nomEl.value=G.labo.nom; nomEl.disabled=locked; }
   if(pvEl)pvEl.value=G.labo.bossPV;
   if(teamEl)teamEl.value=G.labo.teamPV;
@@ -609,7 +730,12 @@ function renderLaboMeta(){
     grid.innerHTML=LABO_EMOJIS.map(em=>`<button type="button" class="labo-emoji-btn${em===G.labo.icon?' selected':''}" ${locked?'disabled':''} onclick="setLaboIcon('${em}')">${em}</button>`).join('');
   }
   const lockNote=document.getElementById('labo-lock-note');
-  if(lockNote)lockNote.style.display=locked?'block':'none';
+  if(lockNote){
+    lockNote.style.display=locked?'block':'none';
+    lockNote.textContent=G.labo.kind==='tuto'
+      ? `Nom et icône fixes pour ce tuto.`
+      : `Nom et icône fixes pour ce boss — utilisez « Sauvegarder comme nouveau boss » pour les personnaliser.`;
+  }
 }
 function setLaboIcon(em){
   G.labo.icon=em;
@@ -868,6 +994,9 @@ function saveLaboChanges(){
   if(G.labo.kind==='builtin'){
     G.bossOverrides[G.labo.sourceId]={sectors,cible,pv:bossPV,teamPV};
     saveBossOverrides();
+  } else if(G.labo.kind==='tuto'){
+    G.tutoOverrides[G.labo.sourceId]={sectors,cible,pv:bossPV,teamPV};
+    saveTutoOverrides();
   } else if(G.labo.kind==='custom'){
     const idx=G.customBosses.findIndex(b=>b.id===G.labo.sourceId);
     if(idx===-1)return;
@@ -890,6 +1019,13 @@ function resetLaboBoss(){
     const original=findBuiltinById(G.labo.sourceId);
     G.labo=original
       ? {kind:'builtin',sourceId:original.id,nom:original.nom,icon:original.icon,bossPV:original.pv,teamPV:original.teamPV,sectors:sectorsToLaboMap(original.sectors)}
+      : newLaboState();
+  } else if(G.labo.kind==='tuto'){
+    delete G.tutoOverrides[G.labo.sourceId];
+    saveTutoOverrides();
+    const original=findTutoDefById(G.labo.sourceId);
+    G.labo=original
+      ? {kind:'tuto',sourceId:original.id,nom:original.nom,icon:original.icon,bossPV:original.pv,teamPV:original.teamPV,sectors:sectorsToLaboMap(original.sectors)}
       : newLaboState();
   } else if(G.labo.kind==='custom'){
     const existing=G.customBosses.find(b=>b.id===G.labo.sourceId);
@@ -931,6 +1067,10 @@ function renderLaboFooter(){
   if(!el)return;
   if(G.labo.kind==='new'){
     el.innerHTML='<button class="btn-gold" onclick="saveLaboBoss()">Sauvegarder ce boss</button>';
+  } else if(G.labo.kind==='tuto'){
+    el.innerHTML=
+      '<button class="btn-gold" onclick="saveLaboChanges()">Sauvegarder les modifications</button>'+
+      '<button class="btn-ghost" onclick="resetLaboBoss()">Réinitialiser</button>';
   } else {
     el.innerHTML=
       '<button class="btn-gold" onclick="saveLaboChanges()">Sauvegarder les modifications</button>'+
