@@ -76,15 +76,15 @@ const BOSS_CONFIG=[
   {id:"balafre",nom:"Balafre",icon:"⚔️",
    sectors:{atk_faible:3,atk_moyenne:[2,5],atk_forte:18,soin:[1,10,19,9],rage:[4,6],bouclier:[13,16,11]},
    desc:"Difficulté : Simple",teamPV:120,pv:150,manches:5,
-   pattern:[{type:"atk",val:25,desc:"Balafre grogne !"},{type:"atk",val:25,desc:"Balafre frappe !"},{type:"heal",val:20,desc:"Balafre se soigne..."},{type:"atk",val:35,desc:"Balafre se déchaîne !"},{type:"atk",val:40,desc:"Balafre attaque avec furie !"}]},
+   pattern:[{type:"atk",val:25,desc:"Balafre grogne !"},{type:"atk",val:25,desc:"Balafre frappe !"},{type:"heal",val:20,desc:"Balafre se soigne..."},{type:"atk",val:35,desc:"Balafre se déchaîne !"},{type:"atk",val:40,desc:"Balafre attaque avec furie !"}]},
   {id:"chose_pale",nom:"La Chose Pâle",icon:"👻",
    sectors:{atk_faible:2,atk_moyenne:[3,11],atk_forte:1,soin:[13,15,16,12],rage:[10,19],feu:[6],brise:[20],esquive:[14],bouclier:[4,17,7]},
    desc:"Difficulté : Moyen",teamPV:60,pv:380,manches:9,
-   pattern:[{type:"atk",val:40,desc:`La Chose Pâle avance...`},{type:"heal",val:40,desc:`La Chose Pâle se régénère...`},{type:"armorUp",val:2,desc:`La Chose Pâle se blinde !`},{type:"atk",val:40,desc:`La Chose Pâle frappe !`},{type:"atk",val:50,desc:`La Chose Pâle surgit !`},{type:"atk",val:60,desc:`La Chose Pâle attaque !`},{type:"heal",val:30,desc:`La Chose Pâle se soigne...`},{type:"atk",val:80,desc:`La Chose Pâle frappe fort !`},{type:"atk",val:90,desc:`La Chose Pâle se déchaîne !`}]},
+   pattern:[{type:"atk",val:40,desc:`La Chose Pâle avance...`},{type:"heal",val:40,desc:`La Chose Pâle se régénère...`},{type:"armorUp",val:2,desc:`La Chose Pâle se blinde !`},{type:"atk",val:40,desc:`La Chose Pâle frappe !`},{type:"atk",val:50,desc:`La Chose Pâle surgit !`},{type:"atk",val:60,desc:`La Chose Pâle attaque !`},{type:"heal",val:30,desc:`La Chose Pâle se soigne...`},{type:"atk",val:80,desc:`La Chose Pâle frappe fort !`},{type:"atk",val:90,desc:`La Chose Pâle se déchaîne !`}]},
   {id:"frabork",nom:"Frabork le Géant",icon:"🪨",
    sectors:{atk_faible:4,atk_moyenne:[8,9],atk_forte:2,soin:[13,15,7,14],rage:[18,3],feu:[11],eau:[17],brise:[12],esquive:[10],bouclier:[1,19,5]},
    desc:"Difficulté : Difficile",teamPV:140,pv:500,manches:7,
-   pattern:[{type:"atk",val:100,desc:`Frabork écrase !`},{type:"armorUp",val:3,desc:`Frabork se fortifie massivement !`},{type:"fireDot",val:8,desc:`Frabork vous enflamme !`},{type:"heal",val:50,desc:`Frabork récupère...`},{type:"armorUp",val:2,desc:`Frabork se renforce encore !`},{type:"atkFire",val:60,desc:`Frabork vous écrase et vous embrase !`},{type:"atkFire",val:80,desc:`Frabork frappe et met le feu !`}]},
+   pattern:[{type:"atk",val:100,desc:`Frabork écrase !`},{type:"armorUp",val:3,desc:`Frabork se fortifie massivement !`},{type:"fireDot",val:8,desc:`Frabork vous enflamme !`},{type:"heal",val:50,desc:`Frabork récupère...`},{type:"armorUp",val:2,desc:`Frabork se renforce encore !`},{type:"atkFire",val:60,desc:`Frabork vous écrase et vous embrase !`},{type:"atkFire",val:80,desc:`Frabork frappe et met le feu !`}]},
 ];
 
 // Couleurs visuelles de la cible par boss (index = bossIdx)
@@ -219,46 +219,46 @@ function cyclicSectors(categories){
 const TUTO_BOSSES=[
   { id:'tuto1', nom:`Tuto 1 — Premiers pas`, icon:'🎯', pv:20, teamPV:20, manches:10,
     sectors:{},
-    pattern:[{type:'atk',val:3,desc:`Le boss attaque !`}],
+    pattern:[{type:'atk',val:3,desc:`Le boss attaque !`}],
     intro:[
-      {icon:'🎯',text:`Bienvenue dans Dart RPG ! Ici, on joue tous ensemble contre un boss imaginaire. Vous lancez de vraies fléchettes sur une vraie cible et vous indiquez où elles se sont plantées sur l'écran.`},
-      {icon:'🤝',text:`Seul·e ? Pas de souci : vous jouez les deux joueurs, J1 et J2. Le boss a 20 PV (points de vie). Votre équipe aussi, et vous les partagez : on gagne ensemble ou on perd ensemble.`},
-      {icon:'🗡️',text:`Chaque fléchette qui touche la cible blesse le boss : −3 PV, −6 PV avec le bouton Double, −9 PV avec le bouton Triple. J1, à toi de lancer 3 fléchettes !`},
+      {icon:'🎯',text:`Bienvenue dans Dart RPG ! Ici, on joue tous ensemble contre un boss imaginaire. Vous lancez de vraies fléchettes sur une vraie cible et vous indiquez où elles se sont plantées sur l'écran.`},
+      {icon:'🤝',text:`Seul·e ? Pas de souci : vous jouez les deux joueurs, J1 et J2. Le boss a 20 PV (points de vie). Votre équipe aussi, et vous les partagez : on gagne ensemble ou on perd ensemble.`},
+      {icon:'🗡️',text:`Chaque fléchette qui touche la cible blesse le boss : −3 PV, −6 PV avec le bouton Double, −9 PV avec le bouton Triple. J1, à toi de lancer 3 fléchettes !`},
     ],
-    afterP1:`Bien joué ! À J2 de lancer ses 3 fléchettes.`,
+    afterP1:`Bien joué ! À J2 de lancer ses 3 fléchettes.`,
   },
   { id:'tuto2', nom:`Tuto 2 — Attaques légères`, icon:'🗡️', pv:40, teamPV:40, manches:14,
     sectors: cyclicSectors(['atk_faible','gris']),
-    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`}],
+    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`}],
     intro:[
-      {icon:'🗡️',text:`Nouvelle règle : les attaques légères ! Un secteur sur deux est une attaque légère, l'autre reste gris.`,previewKey:'atk_faible'},
-      {icon:'⚔️',text:`Boss : 40 PV. Équipe : 40 PV. Il attaque à −5.`},
+      {icon:'🗡️',text:`Nouvelle règle : les attaques légères ! Un secteur sur deux est une attaque légère, l'autre reste gris.`,previewKey:'atk_faible'},
+      {icon:'⚔️',text:`Boss : 40 PV. Équipe : 40 PV. Il attaque à −5.`},
     ],
   },
   { id:'tuto3', nom:`Tuto 3 — Attaques moyennes et fortes`, icon:'🗡️🗡️🗡️', pv:60, teamPV:40, manches:16,
     sectors:{ atk_faible:[1,5,6,9,11,13,14,19], atk_moyenne:[7,20], atk_forte:[2,4,16] },
-    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`}],
+    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`}],
     intro:[
-      {icon:'🗡️🗡️',text:`Nouvelle règle : les attaques moyennes !`,previewKey:'atk_moyenne'},
-      {icon:'🗡️🗡️🗡️',text:`Et les attaques fortes !`,previewKey:'atk_forte'},
-      {icon:'⚔️',text:`Boss : 60 PV. Équipe : 40 PV. Il attaque en alternance : −5, puis −10.`},
+      {icon:'🗡️🗡️',text:`Nouvelle règle : les attaques moyennes !`,previewKey:'atk_moyenne'},
+      {icon:'🗡️🗡️🗡️',text:`Et les attaques fortes !`,previewKey:'atk_forte'},
+      {icon:'⚔️',text:`Boss : 60 PV. Équipe : 40 PV. Il attaque en alternance : −5, puis −10.`},
     ],
   },
   { id:'tuto4', nom:`Tuto 4 — Le soin`, icon:'💚', pv:70, teamPV:40, manches:18,
     sectors:{ soin:[1,3,6,11,16], atk_faible:[8], atk_forte:[9], atk_moyenne:[13,15,17,19,20] },
-    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`},{type:'atk',val:15,desc:`Le boss se déchaîne !`}],
+    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`},{type:'atk',val:15,desc:`Le boss se déchaîne !`}],
     intro:[
-      {icon:'💚',text:`Nouvelle règle : le soin ! Il rend des PV à toute l'équipe.`,previewKey:'soin'},
-      {icon:'⚔️',text:`Boss : 70 PV. Équipe : 40 PV. Il attaque en cycle : −5, −10, −15.`},
+      {icon:'💚',text:`Nouvelle règle : le soin ! Il rend des PV à toute l'équipe.`,previewKey:'soin'},
+      {icon:'⚔️',text:`Boss : 70 PV. Équipe : 40 PV. Il attaque en cycle : −5, −10, −15.`},
     ],
   },
   { id:'tuto5', nom:`Tuto 5 — Le bouclier`, icon:'🛡️', pv:80, teamPV:40, manches:20,
-    victoireText:`Boss vaincu ! Vous pouvez maintenant jouer les vrais boss du jeu !`,
+    victoireText:`Boss vaincu ! L'équipe peut maintenant jouer les vrais boss du jeu !`,
     sectors:{ soin:[1,6,7,14], bouclier:[3,18,19], atk_faible:[10,15,17,20], atk_forte:[11,12] },
-    pattern:[{type:'atk',val:10,desc:`Le boss attaque !`},{type:'atk',val:15,desc:`Le boss attaque plus fort !`},{type:'atk',val:20,desc:`Le boss se déchaîne !`}],
+    pattern:[{type:'atk',val:10,desc:`Le boss attaque !`},{type:'atk',val:15,desc:`Le boss attaque plus fort !`},{type:'atk',val:20,desc:`Le boss se déchaîne !`}],
     intro:[
-      {icon:'🛡️',text:`Nouvelle règle : le bouclier ! Les boucliers s'additionnent et absorbent les dégâts du boss avant les PV de l'équipe.`,previewKey:'bouclier'},
-      {icon:'⚔️',text:`Boss : 80 PV. Équipe : 40 PV. Il attaque en cycle : −10, −15, −20.`},
+      {icon:'🛡️',text:`Nouvelle règle : le bouclier ! Les boucliers s'additionnent et absorbent les dégâts du boss avant les PV de l'équipe.`,previewKey:'bouclier'},
+      {icon:'⚔️',text:`Boss : 80 PV. Équipe : 40 PV. Il attaque en cycle : −10, −15, −20.`},
       {icon:'🛡️',text:`Vous retrouvez les emojis des boucliers dans la zone Boss et dans la zone Équipe.`,highlightZones:true},
     ],
   },
@@ -381,7 +381,7 @@ function showNextTutoPop(){
   const skipBtn=document.getElementById('tuto-pop-skip');
   if(skipBtn)skipBtn.style.display=next.showSkip?'':'none';
   const btn=document.getElementById('tuto-pop-btn');
-  btn.textContent=next.btnLabel||'OK !';
+  btn.textContent=next.btnLabel||`OK !`;
   btn.onclick=()=>{ if(next.onOk)next.onOk(); };
   ov.classList.add('visible');
 }
@@ -436,7 +436,7 @@ function startTuto(idx,opts){
       icon:slide.icon,
       text:slide.text,
       previewHtml:slide.previewKey?refItemHTML(slide.previewKey,tutoSectorFor(boss,slide.previewKey)):null,
-      btnLabel:isLast?`C'est parti !`:'OK !',
+      btnLabel:isLast?`C'est parti !`:`OK !`,
       showSkip:!!opts.showSkip,
       onOk:isLast?()=>{
         hideTutoPop();
@@ -495,14 +495,14 @@ function tutoBossAttackPhase(){
   const X=G.teamPV; // PV restants de l'equipe
   let texte;
   if(A===0){
-    texte=`Le boss attaque ! Il vous fait −${L} PV. Il reste ${X} PV à l'équipe.`;
+    texte=`Le boss attaque ! Il vous fait −${L} PV. Il reste ${X} PV à l'équipe.`;
   } else if(L>0){
-    texte=`Le boss attaque ! Il vous fait −${D} PV, le bouclier en absorbe ${A}. Vous perdez ${L} PV. Il reste ${X} PV à l'équipe.`;
+    texte=`Le boss attaque ! Il vous fait −${D} PV, le bouclier en absorbe ${A}. Vous perdez ${L} PV. Il reste ${X} PV à l'équipe.`;
     if(S===0)texte+=` Vous n'avez plus de boucliers.`;
   } else {
-    texte=`Le boss attaque ! Il vous fait −${D} PV, mais le bouclier a tout absorbé : vous ne perdez aucun PV.`;
+    texte=`Le boss attaque ! Il vous fait −${D} PV, mais le bouclier a tout absorbé : vous ne perdez aucun PV.`;
     texte+=S===0?` Vous n'avez plus de boucliers.`:` Il vous reste ${S} de bouclier.`;
-    texte+=` Il reste ${X} PV à l'équipe.`;
+    texte+=` Il reste ${X} PV à l'équipe.`;
   }
   enqueueBlockingPopup({icon:'💀',text:texte,onOk:()=>{
     hideTutoPop();
@@ -515,7 +515,7 @@ function tutoShowVictory(){
   const idx=G.tuto.idx;
   tutoMarkCleared(idx);
   const hasNext=idx+1<TUTO_BOSSES.length;
-  const victoireText=TUTO_BOSSES[idx].victoireText||`Boss vaincu ! Bravo l'équipe !`;
+  const victoireText=TUTO_BOSSES[idx].victoireText||`Boss vaincu ! Bravo l'équipe !`;
   enqueueBlockingPopup({
     icon:'🏆',text:victoireText,
     btnLabel:hasNext?'Tuto suivant →':`Retour à l'accueil`,
@@ -529,7 +529,7 @@ function tutoShowVictory(){
 function tutoShowDefeat(){
   const idx=G.tuto.idx;
   enqueueBlockingPopup({
-    icon:'💔',text:`Pas grave, on recommence !`,btnLabel:'Rejouer ce tuto',
+    icon:'💔',text:`Pas grave, on recommence !`,btnLabel:'Rejouer ce tuto',
     onOk:()=>{ hideTutoPop(); startTuto(idx); }
   });
 }
@@ -2393,7 +2393,7 @@ function validateRound(){
         const ar=G.effects.armor;
         addFeedItem({icon:'🛡️',text:boss.nom+' — Armure',val:'🛡️'.repeat(ar)+' −'+(ar*20)+'% dégâts',fc:'shield'});
         const subtitles=['','Vos attaques sont réduites de 20%','Vos attaques sont réduites de 40%','Vos attaques sont réduites de 60%','Vos attaques sont réduites de 80% — Brisez ses boucliers !'];
-        showSpecialBossOverlay(boss,'🛡️🛡️','#e8a030',`Le boss gagne ${bossAction.val} bouclier(s) !`,subtitles[ar]||'');
+        showSpecialBossOverlay(boss,'🛡️🛡️','#e8a030',`Le boss gagne ${bossAction.val} bouclier(s) !`,subtitles[ar]||'');
         return;
       }
       if(bossAction.type==='fireDot'){
@@ -2439,7 +2439,7 @@ function validateRound(){
           const absorbed=Math.min(G.effects.shield,dmg);
           G.effects.shield-=absorbed;
           dmg-=absorbed;
-          mods.push({icon:'🛡️',label:absorbed>=before?"Le bouclier absorbe tous les dégâts !":"Le bouclier absorbe "+absorbed+" PV de dégâts",before,after:dmg,color:'#9b7fe8'});
+          mods.push({icon:'🛡️',label:absorbed>=before?"Le bouclier absorbe tous les dégâts !":"Le bouclier absorbe "+absorbed+" PV de dégâts",before,after:dmg,color:'#9b7fe8'});
         }
         showBossAttackOverlay(boss,bossAction,rawDmg,dmg,mods,isAtkFire?'🔥'.repeat(G.effects.teamFire)+' — '+G.effects.teamFire*8+' PV/manche':null);
       } else {
@@ -2473,7 +2473,7 @@ function showTeamAttackOverlay(fireDmg, onDone){
   const intro=document.createElement('div');
   intro.style.cssText='display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;text-align:center;animation:teamAttackIn .3s ease-out;';
   const e1=document.createElement('div');e1.style.cssText='font-size:72px;margin-bottom:12px';e1.textContent='👥';
-  const title=document.createElement('div');title.className='team-attack-title';title.textContent=noDmg?`L'ÉQUIPE N'ATTAQUE PAS`:`L'ÉQUIPE ATTAQUE ${getBoss(G.selectedBoss).nom} !`;
+  const title=document.createElement('div');title.className='team-attack-title';title.textContent=noDmg?`L'ÉQUIPE N'ATTAQUE PAS`:`L'ÉQUIPE ATTAQUE ${getBoss(G.selectedBoss).nom} !`;
   intro.appendChild(e1);intro.appendChild(title);
   content.appendChild(intro);
 
@@ -2525,7 +2525,7 @@ function showTeamAttackOverlay(fireDmg, onDone){
     const arrow=document.createElement('div');arrow.style.cssText='font-size:26px;color:var(--text)';arrow.textContent='→';
     const after=document.createElement('div');after.style.cssText='font-family:var(--font-title);font-size:52px;color:var(--ov-dmg);font-weight:700;animation:teamDamagePulse 0.8s ease-in-out';after.textContent=bossPVApres;
     bossBar.appendChild(before);bossBar.appendChild(arrow);bossBar.appendChild(after);
-    const label=document.createElement('div');label.style.cssText='font-size:14px;color:var(--ov-sublabel);margin-bottom:12px';label.textContent=`Le boss descend en points de vie !`;
+    const label=document.createElement('div');label.style.cssText='font-size:14px;color:var(--ov-sublabel);margin-bottom:12px';label.textContent=`Le boss descend en points de vie !`;
     dmgWrap.appendChild(label);dmgWrap.appendChild(bossBar);
     content.appendChild(dmgWrap);
   } else {
@@ -2715,7 +2715,7 @@ function endRound(bossDmg){
   renderStrip();
   updatePVBars();
   renderEffectsMini();
-  if(!G.tuto)tutoPopup('tuto_grimoire','📖','Grimoire — Appuie sur le bouton Grimoire en haut à droite pour voir ce que fait chaque secteur de la cible !');
+  if(!G.tuto)tutoPopup('tuto_grimoire','📖',`Grimoire — Appuie sur le bouton Grimoire en haut à droite pour voir ce que fait chaque secteur de la cible !`);
 }
 
 // ============================================================
@@ -2725,10 +2725,10 @@ function showEnd(victory){
   if(G.tuto){ victory?tutoShowVictory():tutoShowDefeat(); return; }
   G.inputLocked=false;setGridLocked(false);
   const boss=getBoss(G.selectedBoss);
-  document.getElementById('end-title').textContent=victory?'VICTOIRE !':'DÉFAITE';
+  document.getElementById('end-title').textContent=victory?`VICTOIRE !`:'DÉFAITE';
   document.getElementById('end-title').style.color=victory?'var(--gold)':'var(--danger)';
   document.getElementById('end-lbl').textContent=boss.nom;
-  document.getElementById('end-sub').textContent=victory?boss.nom+' est vaincu !':'Vaincus au tour '+G.manche+'...';
+  document.getElementById('end-sub').textContent=victory?boss.nom+` est vaincu !`:'Vaincus au tour '+G.manche+'...';
   const dmg=G.bossPVMax-G.bossPV;
   G.finalScore=victory?G.teamPV:dmg;
   document.getElementById('end-score-num').textContent=G.finalScore;
@@ -2739,10 +2739,10 @@ function showEnd(victory){
   const duration=mins+':'+secs;
   document.getElementById('end-stats').innerHTML=
     '<div class="end-stat"><div class="end-stat-lbl">Durée</div><div class="end-stat-val gold">'+duration+'</div></div>'+
-    '<div class="end-stat"><div class="end-stat-lbl">Plus gros coup</div><div class="end-stat-val gold">'+G.stats.biggestHit+' PV</div></div>'+
-    '<div class="end-stat"><div class="end-stat-lbl">Dégâts infligés</div><div class="end-stat-val">'+G.stats.totalDmg+' PV</div></div>'+
-    '<div class="end-stat"><div class="end-stat-lbl">Dégâts subis</div><div class="end-stat-val '+(G.teamPV<=0?'danger':'')+'">'+G.stats.totalDmgTaken+' PV</div></div>'+
-    '<div class="end-stat"><div class="end-stat-lbl">Soins reçus</div><div class="end-stat-val heal" style="color:var(--green)">'+G.stats.heals+' PV</div></div>';
+    '<div class="end-stat"><div class="end-stat-lbl">Plus gros coup</div><div class="end-stat-val gold">'+G.stats.biggestHit+' PV</div></div>'+
+    '<div class="end-stat"><div class="end-stat-lbl">Dégâts infligés</div><div class="end-stat-val">'+G.stats.totalDmg+' PV</div></div>'+
+    '<div class="end-stat"><div class="end-stat-lbl">Dégâts subis</div><div class="end-stat-val '+(G.teamPV<=0?'danger':'')+'">'+G.stats.totalDmgTaken+' PV</div></div>'+
+    '<div class="end-stat"><div class="end-stat-lbl">Soins reçus</div><div class="end-stat-val heal" style="color:var(--green)">'+G.stats.heals+' PV</div></div>';
   nav('end');
 }
 
