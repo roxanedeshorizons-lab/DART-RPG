@@ -53,7 +53,7 @@
       </button>
     </div>
     <div class="section-lbl" style="padding:20px 0 8px">Aide</div>
-    <button class="btn-ghost" onclick="showTuto()">🎯 Revoir le tuto</button>
+    <button class="btn-ghost" onclick="startTuto(0)">🎯 Revoir le tuto</button>
   </div>
 </div>
 
@@ -334,26 +334,14 @@
   <div id="ref-content"></div>
 </div>
 
-<!-- TUTO (premier lancement) -->
-<div class="tuto-ov" id="tuto-ov">
-  <button class="tuto-skip" onclick="closeTuto()">Passer</button>
-  <div class="tuto-body">
-    <div class="tuto-icon" id="tuto-icon"></div>
-    <div class="tuto-title" id="tuto-title"></div>
-    <div class="tuto-text" id="tuto-text"></div>
-  </div>
-  <div class="tuto-foot">
-    <div class="tuto-dots" id="tuto-dots"></div>
-    <button class="btn-gold" id="tuto-next" onclick="nextTuto()">Suivant</button>
-  </div>
-</div>
-
-<!-- TUTO CONTEXTUEL (combat) : bloque le jeu jusqu'au clic sur OK -->
+<!-- ECRITEAUX DE TUTO : bloque le jeu jusqu'au clic sur OK (intro, combat, victoire/defaite) -->
 <div class="tuto-pop-ov" id="tuto-pop-ov">
   <div class="tuto-pop" id="tuto-pop">
+    <button class="tuto-skip" id="tuto-pop-skip" style="display:none" onclick="tutoSkip()">Passer</button>
     <div class="tuto-pop-icon" id="tuto-pop-icon"></div>
     <div class="tuto-pop-text" id="tuto-pop-text"></div>
-    <button class="tuto-pop-btn" onclick="hideTutoPop()">OK !</button>
+    <div id="tuto-pop-preview" style="width:100%;display:none"></div>
+    <button class="tuto-pop-btn" id="tuto-pop-btn">OK !</button>
   </div>
 </div>
 

@@ -126,7 +126,7 @@ function allBosses(){
   });
   return builtins.concat(G.customBosses||[]);
 }
-function getBoss(i){return allBosses()[i];}
+function getBoss(i){ if(G.tuto)return G.tuto.boss; return allBosses()[i]; }
 function getCibleFor(i){
   if(i<BOSS_CONFIG.length){
     const b=getBoss(i);
@@ -175,6 +175,81 @@ function saveBossOverrides(){
 }
 
 // ============================================================
+// TUTO BOSSES — 5 combats progressifs qui enseignent les regles
+// ============================================================
+// Ordre des secteurs sur la cible (meme ordre que renderCible / renderLaboCible)
+const SECTOR_RING=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+const TUTO_OVERRIDE_STORAGE_KEY='dartRpgTutoOverrides';
+const TUTO_PROGRESS_STORAGE_KEY='dartRpgTutoProgress';
+
+// Construit l'objet "cible" (couleurs + icones par secteur) a partir d'une map sectors,
+// en reutilisant les couleurs du Labo et les icones des ACTIONS (meme logique que buildCibleFromLabo).
+function buildCibleFromSectorsMap(sectorsObj){
+  const cible={};
+  Object.entries(sectorsObj||{}).forEach(([key,val])=>{
+    const laboDef=LABO_ACTIONS.find(a=>a.key===key);
+    const actionDef=ACTIONS[key];
+    if(!laboDef||laboDef.key==='neutre')return;
+    const icon=actionDef?actionDef.icon:laboDef.icon;
+    (Array.isArray(val)?val:[val]).forEach(n=>{ cible[n]={color:laboDef.color,icon}; });
+  });
+  return cible;
+}
+// Numero du premier secteur assigne a une action donnee, pour l'afficher dans un apercu
+function tutoSectorFor(boss,key){
+  const v=boss.sectors&&boss.sectors[key];
+  if(v==null)return null;
+  return Array.isArray(v)?v[0]:v;
+}
+
+const TUTO_BOSSES=[
+  { id:'tuto1', nom:`Tuto 1 — Premiers pas`, icon:'🎯', pv:20, teamPV:20, manches:10,
+    sectors:{},
+    pattern:[{type:'atk',val:3,desc:`Le boss attaque !`}],
+    intro:[
+      {icon:'🎯',text:`Bienvenue dans Dart RPG ! Ici, on joue tous ensemble contre un boss imaginaire. Vous lancez de vraies fléchettes sur une vraie cible et vous indiquez où elles se sont plantées sur l'écran.`},
+      {icon:'🤝',text:`Seul·e ? Pas de souci : vous jouez les deux joueurs, J1 et J2. Le boss a 20 PV (points de vie). Votre équipe aussi, et vous les partagez : on gagne ensemble ou on perd ensemble.`},
+      {icon:'🗡️',text:`Chaque fléchette qui touche la cible blesse le boss : −3 PV, −6 PV avec le bouton Double, −9 PV avec le bouton Triple. J1, à toi de lancer 3 fléchettes !`},
+    ],
+    afterP1:`Bien joué ! À J2 de lancer ses 3 fléchettes.`,
+  },
+];
+TUTO_BOSSES.forEach(b=>{ b.cible=buildCibleFromSectorsMap(b.sectors); });
+
+function findTutoDefById(id){ return TUTO_BOSSES.find(b=>b.id===id); }
+// Fusionne la config de base d'un tuto avec les eventuelles modifs faites dans le Labo (mode editeur)
+function tutoBossFor(idx){
+  const base=TUTO_BOSSES[idx];
+  if(!base)return null;
+  const ov=G.tutoOverrides&&G.tutoOverrides[base.id];
+  if(!ov)return base;
+  return {...base,sectors:ov.sectors,cible:ov.cible,pv:ov.pv,teamPV:ov.teamPV,overridden:true};
+}
+function loadTutoOverrides(){
+  try{
+    const raw=localStorage.getItem(TUTO_OVERRIDE_STORAGE_KEY);
+    G.tutoOverrides=raw?JSON.parse(raw):{};
+  }catch(e){ G.tutoOverrides={}; }
+}
+function saveTutoOverrides(){
+  try{ localStorage.setItem(TUTO_OVERRIDE_STORAGE_KEY,JSON.stringify(G.tutoOverrides)); }catch(e){}
+}
+function loadTutoProgress(){
+  try{
+    const raw=localStorage.getItem(TUTO_PROGRESS_STORAGE_KEY);
+    const o=raw?JSON.parse(raw):null;
+    G.tutoProgress=(o&&Array.isArray(o.cleared))?o:{cleared:[]};
+  }catch(e){ G.tutoProgress={cleared:[]}; }
+}
+function saveTutoProgress(){
+  try{ localStorage.setItem(TUTO_PROGRESS_STORAGE_KEY,JSON.stringify(G.tutoProgress)); }catch(e){}
+}
+function tutoIsUnlocked(idx){ return idx===0||G.tutoProgress.cleared.includes(idx-1); }
+function tutoMarkCleared(idx){
+  if(!G.tutoProgress.cleared.includes(idx)){ G.tutoProgress.cleared.push(idx); saveTutoProgress(); }
+}
+
+// ============================================================
 // MODE JOUR / NUIT
 // ============================================================
 const THEME_STORAGE_KEY='dartRpgTheme';
@@ -211,9 +286,8 @@ function renderThemeToggle(){
 }
 
 // ============================================================
-// TUTO (premier lancement)
+// TUTO — vu/pas vu (persiste en local), utilise par le Grimoire optionnel
 // ============================================================
-// Fonctionnalités déjà vues, stockées dans un seul objet : {intro:true, tuto_cible:true, ...}
 const TUTO_STORAGE_KEY='tutoVu';
 const TUTO_VU=(()=>{
   let raw=null;
@@ -226,80 +300,167 @@ function marquerTutoVu(key){
   try{ localStorage.setItem(TUTO_STORAGE_KEY,JSON.stringify(TUTO_VU)); }catch(e){}
 }
 function tutoDejaVu(key){ return !!TUTO_VU[key]; }
-const TUTO_SLIDES=[
-  {icon:'🎯',title:'Dart RPG',text:'Un jeu RPG qui se joue avec une vraie cible de fléchettes !'},
-  {icon:'🏹',title:'Comment jouer ?',text:"Lance tes fléchettes sur ta vraie cible, puis reporte le résultat dans l'appli."},
-  {icon:'📱',title:"La cible dans l'appli",text:"La cible affichée est un référentiel — elle t'indique quels secteurs font quoi selon le boss."},
-  {icon:'⚔️',title:'Bonne chance !',text:'Choisis un boss et affronte-le avec ton équipe ! (ou seul.e)',btn:"Commencer l'aventure"}
-];
-let tutoIdx=0;
-function showTutoIfFirstLaunch(){
-  if(!tutoDejaVu('intro'))showTuto();
-}
-function showTuto(){
-  tutoIdx=0;
-  renderTuto();
-  document.getElementById('tuto-ov').classList.add('visible');
-}
-function renderTuto(){
-  const s=TUTO_SLIDES[tutoIdx];
-  document.getElementById('tuto-icon').textContent=s.icon;
-  document.getElementById('tuto-title').textContent=s.title;
-  document.getElementById('tuto-text').textContent=s.text;
-  document.getElementById('tuto-next').textContent=s.btn||'Suivant';
-  document.getElementById('tuto-dots').innerHTML=TUTO_SLIDES.map((_,i)=>'<span class="tuto-dot'+(i===tutoIdx?' active':'')+'"></span>').join('');
-}
-function nextTuto(){
-  if(tutoIdx<TUTO_SLIDES.length-1){ tutoIdx++; renderTuto(); }
-  else closeTuto();
-}
-function closeTuto(){
-  document.getElementById('tuto-ov').classList.remove('visible');
-  marquerTutoVu('intro');
-}
-// Les swipes dans le tuto ne doivent pas ouvrir le bandeau / le grimoire derrière
-document.getElementById('tuto-ov').addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
 
 // ============================================================
-// TUTO CONTEXTUEL (combat) — popup bloquant, une fois par fonctionnalité
+// ECRITEAUX DE TUTO — popup bloquant reutilise pour tout : intro, apercus,
+// consignes pendant le combat, attaque du boss, victoire/defaite.
+// Une file d'attente : un seul ecriteau affiche a la fois, le suivant attend son tour.
 // ============================================================
-// Le popup reste affiché jusqu'au clic sur OK. Ceux demandés pendant qu'un
-// autre est affiché attendent leur tour.
 const tutoPopQueue=[];
 let tutoPopOpen=false;
-function tutoPopup(key,icon,text){
-  if(tutoDejaVu(key))return;
-  marquerTutoVu(key);
-  tutoPopQueue.push({icon,text});
+// item: {icon, text, previewHtml?, btnLabel?, onOk?, showSkip?}
+function enqueueBlockingPopup(item){
+  tutoPopQueue.push(item);
   if(!tutoPopOpen)showNextTutoPop();
 }
 function showNextTutoPop(){
   const ov=document.getElementById('tuto-pop-ov');
   const next=tutoPopQueue.shift();
-  if(!ov||!next){ tutoPopOpen=false; if(ov)ov.classList.remove('visible'); return; }
+  if(!ov||!next){
+    tutoPopOpen=false;
+    if(ov)ov.classList.remove('visible');
+    return;
+  }
   tutoPopOpen=true;
-  document.getElementById('tuto-pop-icon').textContent=next.icon;
-  document.getElementById('tuto-pop-text').textContent=next.text;
+  document.getElementById('tuto-pop-icon').textContent=next.icon||'';
+  document.getElementById('tuto-pop-text').textContent=next.text||'';
+  const preview=document.getElementById('tuto-pop-preview');
+  if(preview){
+    if(next.previewHtml){ preview.innerHTML=next.previewHtml; preview.style.display='block'; }
+    else { preview.innerHTML=''; preview.style.display='none'; }
+  }
+  const skipBtn=document.getElementById('tuto-pop-skip');
+  if(skipBtn)skipBtn.style.display=next.showSkip?'':'none';
+  const btn=document.getElementById('tuto-pop-btn');
+  btn.textContent=next.btnLabel||'OK !';
+  btn.onclick=()=>{ if(next.onOk)next.onOk(); };
   ov.classList.add('visible');
 }
+// Appele par le clic OK : termine l'ecriteau courant puis affiche le suivant de la file
 function hideTutoPop(){
   showNextTutoPop();
 }
+// Ancien systeme de popup "une seule fois par fonctionnalite" — ne sert plus qu'au
+// tuto optionnel du Grimoire (les popups contextuels combat/intro sont remplaces par les tutos boss).
+function tutoPopup(key,icon,text){
+  if(tutoDejaVu(key))return;
+  marquerTutoVu(key);
+  enqueueBlockingPopup({icon,text,onOk:hideTutoPop});
+}
+// Le bouton "Passer" (premier lancement uniquement) vide la file et quitte le tuto en cours
+function tutoSkip(){
+  tutoPopQueue.length=0;
+  tutoPopOpen=false;
+  const ov=document.getElementById('tuto-pop-ov');
+  if(ov)ov.classList.remove('visible');
+  G.tuto=null;
+  setTutoUIVisibility(false);
+  nav('home');
+}
 // Les swipes sur le popup ne doivent pas ouvrir le bandeau / le grimoire derrière
 document.getElementById('tuto-pop-ov').addEventListener('touchend',e=>e.stopPropagation(),{passive:true});
-// Appelé après chaque fléchette avec l'action réellement jouée
-function tutoSecteur(ak,ef,v,isRage){
-  if(isRage)tutoPopup('tuto_rage','🤬','Rage — Touche les 2 secteurs rage dans la même manche pour ×2 !');
-  if(ak==='soin')tutoPopup('tuto_soin','💚',"Soin — L'équipe se soigne de "+ef.val+' PV !');
-  else if(ak==='atk_faible'||ak==='atk_moyenne'||ak==='atk_forte')tutoPopup('tuto_atk','🗡️',"Attaque — L'équipe inflige "+ef.val+' dégâts au boss !');
-  else if(ak==='bouclier')tutoPopup('tuto_bouclier','🛡️','Bouclier — Absorbe les prochains dégâts du boss !');
-  else if(ak==='feu')tutoPopup('tuto_feu','🔥','Feu — Inflige '+(ef.val*(G.effects.fire.dmgPerStack||3))+' PV/manche au boss pendant 2 manches !');
-  else if(ak==='esquive')tutoPopup('tuto_esquive','🌀','Esquive — Accumule 3 charges pour esquiver la prochaine attaque !');
-  else if(ak==='eau')tutoPopup('tuto_eau','💧',"Eau — Éteint le feu ennemi sur l'équipe !");
-  else if(ak==='brise')tutoPopup('tuto_brise','⚒️','Brise-bouclier — Casse les boucliers du boss !');
-  else if(ak==='bull_miroir')tutoPopup('tuto_bull','🫧','Bull — Si feu actif : stacks ×2 ! Sinon : −20 PV au boss.');
-  else if(ak==='bull_dore')tutoPopup('tuto_bullseye','🎯','Bullseye — +3 fléchettes dorées ×1.3 !');
-  else if(ak==='meteorite')tutoPopup('tuto_meteorite','☄️','Météorite — Triple attaque légère : 100 PV directs !');
+
+// ============================================================
+// MOTEUR DE TUTO — enchaine intro, combat simplifie, victoire/defaite
+// ============================================================
+// Cache/affiche les boutons Objet et Grimoire pendant un combat de tuto (non introduits encore)
+function setTutoUIVisibility(active){
+  const grim=document.getElementById('grimoire-btn');
+  const item=document.getElementById('item-game-btn');
+  if(grim)grim.style.display=active?'none':'';
+  if(item)item.style.display=active?'none':'';
+}
+// Lance le tuto d'index idx (0 a TUTO_BOSSES.length-1) : file les ecriteaux d'intro puis le combat.
+// showSkip : seulement vrai au tout premier lancement de l'appli (bouton "Passer").
+function startTuto(idx,opts){
+  opts=opts||{};
+  if(!tutoIsUnlocked(idx))idx=0;
+  const def=TUTO_BOSSES[idx];
+  if(!def)return;
+  const boss=tutoBossFor(idx);
+  G.tuto={idx,boss,afterP1Shown:false};
+  tutoPopQueue.length=0;
+  tutoPopOpen=false;
+  def.intro.forEach((slide,i)=>{
+    const isLast=i===def.intro.length-1;
+    enqueueBlockingPopup({
+      icon:slide.icon,
+      text:slide.text,
+      previewHtml:slide.previewKey?refItemHTML(slide.previewKey,tutoSectorFor(boss,slide.previewKey)):null,
+      btnLabel:isLast?`C'est parti !`:'OK !',
+      showSkip:!!opts.showSkip,
+      onOk:isLast?()=>{ hideTutoPop(); tutoLaunchFight(); }:hideTutoPop,
+    });
+  });
+}
+// Demarre reellement le combat (PV, cible, etc.) une fois l'intro terminee — reprend startGame()
+function tutoLaunchFight(){
+  const boss=G.tuto.boss;
+  G.teamPV=boss.teamPV;G.teamPVMax=boss.teamPV;
+  G.bossPV=boss.pv;G.bossPVMax=boss.pv;
+  G.manche=1;
+  G.turnQueue=buildTurnQueue(G.players.length);
+  G.turnIndex=0;
+  G.liveFeed=[];
+  G.effects={shield:0,shieldDur:0,dodge:0,dodgeCharges:0,fire:{stacks:0,dur:0,dmgPerStack:3},teamFire:0,armor:0};
+  G.goldenDartsRemaining=0;
+  G.activeBoostNext=false;G.activeResurr=false;G.activeBouclierItem=false;
+  buildSectorMap(G.selectedBoss);
+  G.bossShield=0;G.rageAtRoundStart={active:false,dur:0};G.rage={has1:false,has2:false,active:false,dur:0};
+  G.stats={biggestHit:0,totalDmg:0,totalDmgTaken:0,heals:0,startTime:Date.now()};
+  G.infoMode=false;
+  G.tuto.afterP1Shown=false;
+  initDI();renderGameUI();nav('game');
+  setTutoUIVisibility(true);
+}
+// Remplace la cinematique d'attaque du boss par un ecriteau simple : calcule les degats
+// (le bouclier absorbe en premier, comme dans le jeu normal), les applique, puis affiche le resultat.
+function tutoBossAttackPhase(){
+  const boss=G.tuto.boss;
+  const bossAction=boss.pattern[(G.manche-1)%boss.pattern.length];
+  let dmg=bossAction.val;
+  if((G.effects.shield||0)>0&&dmg>0){
+    const absorbed=Math.min(G.effects.shield,dmg);
+    G.effects.shield-=absorbed;
+    dmg-=absorbed;
+  }
+  G.teamPV=Math.max(0,G.teamPV-dmg);
+  G.stats.totalDmgTaken+=dmg;
+  updatePVBars();
+  renderEffectsMini();
+  const texte=`${boss.nom} attaque ! Il vous fait −${dmg} PV. Il reste ${G.teamPV} PV à l'équipe.`;
+  enqueueBlockingPopup({icon:'💀',text:texte,onOk:()=>{
+    hideTutoPop();
+    if(G.teamPV<=0){ tutoShowDefeat(); return; }
+    if(G.bossPV<=0){ tutoShowVictory(); return; }
+    endRound(dmg);
+  }});
+}
+function tutoShowVictory(){
+  const idx=G.tuto.idx;
+  tutoMarkCleared(idx);
+  const hasNext=idx+1<TUTO_BOSSES.length;
+  enqueueBlockingPopup({
+    icon:'🏆',text:`Boss vaincu ! Bravo l'équipe !`,
+    btnLabel:hasNext?'Tuto suivant →':`Retour à l'accueil`,
+    onOk:()=>{
+      hideTutoPop();
+      if(hasNext)startTuto(idx+1);
+      else { G.tuto=null; setTutoUIVisibility(false); nav('home'); }
+    }
+  });
+}
+function tutoShowDefeat(){
+  const idx=G.tuto.idx;
+  enqueueBlockingPopup({
+    icon:'💔',text:`Pas grave, on recommence !`,btnLabel:'Rejouer ce tuto',
+    onOk:()=>{ hideTutoPop(); startTuto(idx); }
+  });
+}
+function showTutoIfFirstLaunch(){
+  if(tutoDejaVu('tuto_intro_done'))return;
+  marquerTutoVu('tuto_intro_done');
+  startTuto(0,{showSkip:true});
 }
 
 function defaultCustomPattern(teamPV){
@@ -784,6 +945,7 @@ let G={
   rageAtRoundStart:{active:false,dur:0},
   customBosses:[],bossOverrides:{},labo:null,
   theme:'light',
+  tuto:null,tutoOverrides:{},tutoProgress:{cleared:[]},
 };
 let DI={mod:1,darts:[]};
 let lastDartTime=0;
@@ -794,6 +956,7 @@ function ini(n){return n.split(' ').map(w=>w[0]||'').join('').toUpperCase().slic
 // NAV
 // ============================================================
 function nav(s){
+  if(G.tuto&&s!=='game'){ G.tuto=null; setTutoUIVisibility(false); }
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   const el=document.getElementById('screen-'+s);
   if(el){el.classList.add('active');el.scrollTop=0;}
@@ -996,6 +1159,8 @@ function activeSlot(){
 }
 
 function startGame(){
+  G.tuto=null;
+  setTutoUIVisibility(false);
   document.querySelectorAll('.player-name-inp').forEach((inp,i)=>{if(G.players[i])G.players[i].name=inp.value||`Joueur ${i+1}`;});
   const boss=getBoss(G.selectedBoss);
   G.teamPV=boss.teamPV;G.teamPVMax=boss.teamPV;
@@ -1012,7 +1177,6 @@ function startGame(){
   G.stats={biggestHit:0,totalDmg:0,totalDmgTaken:0,heals:0,startTime:Date.now()};
   G.infoMode=false;
   initDI();renderGameUI();nav('game');
-  tutoPopup('tuto_cible','🎯','Reporte ton score sur la cible virtuelle !');
 }
 
 // Mode info du Grimoire : assombrit uniquement la cible et la rend consultable
@@ -1118,7 +1282,6 @@ function dartPress(v){
       updatePVBars();
     }
     DI.darts.push({value:v,multi:m,label,ak:'bull_miroir',ef:mef,ad:{feedClass:'special'},dartIcon:'🫧',dartName:'Miroir',golden:false});
-    tutoSecteur('bull_miroir',mef,v,false);
     setMod(1);renderStrip();
     if(G.bossPV<=0){setTimeout(()=>showEnd(true),400);return;}
     if(DI.darts.length>=maxDarts){finishPlayerTurn();}
@@ -1130,7 +1293,6 @@ function dartPress(v){
     G.goldenDartsRemaining=3;
     addFeedItem({icon:'🎯',text:(G.players[G.currentPlayer]?.name||'')+' — Flechettes dorees !',val:'+3 flechettes x1.3',fc:'special'});
     DI.darts.push({value:v,multi:m,label,ak:'bull_dore',ef:{type:'bull_dore'},ad:{feedClass:'special'},dartIcon:'🎯',dartName:'Dorees',golden:false});
-    tutoSecteur('bull_dore',null,v,false);
     setMod(1);renderStrip();
     if(DI.darts.length>=maxDarts){finishPlayerTurn();}
     return;
@@ -1156,7 +1318,6 @@ function dartPress(v){
   if(rageS.length>1&&v===rageS[1]) G.rage.has2=true;
 
   DI.darts.push({value:v,multi:m,label,ak,ef:aef,ad,dartIcon,dartName,golden:isGolden});
-  tutoSecteur(ak,aef,v,rageS.includes(v));
   if(isGolden)G.goldenDartsRemaining--;
   setMod(1);
 
@@ -1400,6 +1561,10 @@ function finishPlayerTurn(){
     lastDartTime=0;
     G.playerEditor=null;
     setMod(1);
+    if(G.tuto&&G.tuto.boss.afterP1&&!G.tuto.afterP1Shown&&G.manche===1){
+      G.tuto.afterP1Shown=true;
+      enqueueBlockingPopup({icon:'🏹',text:G.tuto.boss.afterP1,onOk:hideTutoPop});
+    }
   }
 
   confirmP();
@@ -1953,6 +2118,8 @@ function validateRound(){
   // (le verrouillage par joueur se fait des que ses 3 flechettes sont jouees, voir finishPlayerTurn())
   if(!(G.slotDone[0]&&G.slotDone[1])) return;
 
+  if(G.tuto){ tutoBossAttackPhase(); return; }
+
   const boss=getBoss(G.selectedBoss);
 
   // Appliquer les dégâts de feu sur le boss
@@ -2332,13 +2499,14 @@ function endRound(bossDmg){
   renderStrip();
   updatePVBars();
   renderEffectsMini();
-  tutoPopup('tuto_grimoire','📖','Grimoire — Appuie sur le bouton Grimoire en haut à droite pour voir ce que fait chaque secteur de la cible !');
+  if(!G.tuto)tutoPopup('tuto_grimoire','📖','Grimoire — Appuie sur le bouton Grimoire en haut à droite pour voir ce que fait chaque secteur de la cible !');
 }
 
 // ============================================================
 // END
 // ============================================================
 function showEnd(victory){
+  if(G.tuto){ victory?tutoShowVictory():tutoShowDefeat(); return; }
   G.inputLocked=false;setGridLocked(false);
   const boss=getBoss(G.selectedBoss);
   document.getElementById('end-title').textContent=victory?'VICTOIRE !':'DÉFAITE';
@@ -2458,6 +2626,18 @@ function showMiniRef(key){
 }
 function hideMiniRef(){document.getElementById('mini-ref-popup').style.display='none';}
 
+// Bloc "fiche" d'une action (icone, nom, secteur, effet Simple/Double/Triple) — utilise par le
+// Grimoire (renderRef) et par l'apercu des ecriteaux de tuto quand une nouvelle regle apparait.
+function refItemHTML(key,sec){
+  const a=ACTIONS[key];
+  if(!a)return '';
+  return '<div class="ref-item">'+
+    '<div class="ref-item-header"><span class="ref-icon">'+a.icon+'</span><span class="ref-name">'+a.name+'</span><span class="ref-sector">Secteur '+sec+'</span></div>'+
+    '<div class="ref-effect"><span class="ref-tag s">Simple</span>'+colorDesc(a.simple.desc)+'</div>'+
+    '<div class="ref-effect"><span class="ref-tag d">Double</span>'+colorDesc(a.double.desc)+'</div>'+
+    '<div class="ref-effect"><span class="ref-tag t">Triple</span><span style="color:var(--purple)">'+colorDesc(a.triple.desc)+'</span></div>'+
+  '</div>';
+}
 function renderRef(){
   const el=document.getElementById('ref-content');if(!el)return;
   const boss=getBoss(G.selectedBoss);
@@ -2469,16 +2649,7 @@ function renderRef(){
   if(title)title.textContent=boss.nom;
   const main=['atk_faible','atk_moyenne','atk_forte','soin','bouclier','feu','esquive'];
   el.innerHTML='<div style="padding:0 20px 16px">'+
-    main.map(key=>{
-      const a=ACTIONS[key];
-      const sec=sectorOf[key];
-      return '<div class="ref-item">'+
-        '<div class="ref-item-header"><span class="ref-icon">'+a.icon+'</span><span class="ref-name">'+a.name+'</span><span class="ref-sector">Secteur '+sec+'</span></div>'+
-        '<div class="ref-effect"><span class="ref-tag s">Simple</span>'+colorDesc(a.simple.desc)+'</div>'+
-        '<div class="ref-effect"><span class="ref-tag d">Double</span>'+colorDesc(a.double.desc)+'</div>'+
-        '<div class="ref-effect"><span class="ref-tag t">Triple</span><span style="color:var(--purple)">'+colorDesc(a.triple.desc)+'</span></div>'+
-      '</div>';
-    }).join('')+
+    main.map(key=>refItemHTML(key,sectorOf[key])).join('')+
     (r.length>=2?
       '<div class="ref-item" style="border-color:#5a3010;background:#1e0e04">'+
         '<div class="ref-item-header"><span class="ref-icon">🤬</span><span class="ref-name">Rage — Combo</span><span class="ref-sector">Secteurs '+r[0]+' + '+r[1]+'</span></div>'+
@@ -2741,4 +2912,4 @@ function renderRessource(){
   if(sl)sl.textContent='Inventaire ('+G.inventory.length+' / '+G.inventorySlots+' slots)';
 }
 
-window.onload=()=>{loadTheme();loadCustomBosses();loadBossOverrides();renderHome();renderRef();nav('home');showTutoIfFirstLaunch();};
+window.onload=()=>{loadTheme();loadCustomBosses();loadBossOverrides();loadTutoOverrides();loadTutoProgress();renderHome();renderRef();nav('home');showTutoIfFirstLaunch();};
