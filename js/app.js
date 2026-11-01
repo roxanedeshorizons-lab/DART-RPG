@@ -202,6 +202,10 @@ function tutoSectorFor(boss,key){
   return Array.isArray(v)?v[0]:v;
 }
 
+// Decoupe l'anneau des secteurs en tranches successives, pour des dispositions par defaut
+// raisonnables (modifiables ensuite dans le Labo, mode editeur).
+function ringSlice(start,count){ return SECTOR_RING.slice(start,start+count); }
+
 const TUTO_BOSSES=[
   { id:'tuto1', nom:`Tuto 1 — Premiers pas`, icon:'🎯', pv:20, teamPV:20, manches:10,
     sectors:{},
@@ -212,6 +216,55 @@ const TUTO_BOSSES=[
       {icon:'🗡️',text:`Chaque fléchette qui touche la cible blesse le boss : −3 PV, −6 PV avec le bouton Double, −9 PV avec le bouton Triple. J1, à toi de lancer 3 fléchettes !`},
     ],
     afterP1:`Bien joué ! À J2 de lancer ses 3 fléchettes.`,
+  },
+  { id:'tuto2', nom:`Tuto 2 — Attaques légères`, icon:'🗡️', pv:40, teamPV:40, manches:14,
+    sectors:{ atk_faible: SECTOR_RING.filter((_,i)=>i%2===0) },
+    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`}],
+    intro:[
+      {icon:'🗡️',text:`Nouvelle règle : les attaques légères ! Un secteur sur deux est une attaque légère, l'autre reste gris.`,previewKey:'atk_faible'},
+      {icon:'⚔️',text:`Boss : 40 PV. Équipe : 40 PV. Il attaque à −5.`},
+    ],
+  },
+  { id:'tuto3', nom:`Tuto 3 — Attaques moyennes et fortes`, icon:'🗡️🗡️🗡️', pv:60, teamPV:40, manches:16,
+    sectors:{
+      atk_faible: ringSlice(0,5),
+      atk_moyenne: ringSlice(5,5),
+      atk_forte: ringSlice(10,5),
+    },
+    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`}],
+    intro:[
+      {icon:'🗡️🗡️',text:`Nouvelle règle : les attaques moyennes !`,previewKey:'atk_moyenne'},
+      {icon:'🗡️🗡️🗡️',text:`Et les attaques fortes !`,previewKey:'atk_forte'},
+      {icon:'⚔️',text:`Boss : 60 PV. Équipe : 40 PV. Il attaque en alternance : −5, puis −10.`},
+    ],
+  },
+  { id:'tuto4', nom:`Tuto 4 — Le soin`, icon:'💚', pv:70, teamPV:40, manches:18,
+    sectors:{
+      atk_faible: ringSlice(0,4),
+      atk_moyenne: ringSlice(4,4),
+      atk_forte: ringSlice(8,4),
+      soin: ringSlice(12,4),
+    },
+    pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`},{type:'atk',val:15,desc:`Le boss se déchaîne !`}],
+    intro:[
+      {icon:'💚',text:`Nouvelle règle : le soin ! Il rend des PV à toute l'équipe.`,previewKey:'soin'},
+      {icon:'⚔️',text:`Boss : 70 PV. Équipe : 40 PV. Il attaque en cycle : −5, −10, −15.`},
+    ],
+  },
+  { id:'tuto5', nom:`Tuto 5 — Le bouclier`, icon:'🛡️', pv:80, teamPV:40, manches:20,
+    sectors:{
+      atk_faible: ringSlice(0,4),
+      atk_moyenne: ringSlice(4,4),
+      atk_forte: ringSlice(8,3),
+      soin: ringSlice(11,3),
+      bouclier: ringSlice(14,3),
+    },
+    pattern:[{type:'atk',val:10,desc:`Le boss attaque !`},{type:'atk',val:15,desc:`Le boss attaque plus fort !`},{type:'atk',val:20,desc:`Le boss se déchaîne !`}],
+    intro:[
+      {icon:'🛡️',text:`Nouvelle règle : le bouclier ! Les boucliers s'additionnent et absorbent les dégâts du boss avant les PV de l'équipe.`,previewKey:'bouclier'},
+      {icon:'⚔️',text:`Boss : 80 PV. Équipe : 40 PV. Il attaque en cycle : −10, −15, −20.`},
+      {icon:'🛡️',text:`Vous retrouvez les emojis des boucliers dans la zone Boss et dans la zone Équipe.`,highlightZones:true},
+    ],
   },
 ];
 TUTO_BOSSES.forEach(b=>{ b.cible=buildCibleFromSectorsMap(b.sectors); });
@@ -389,8 +442,21 @@ function startTuto(idx,opts){
       previewHtml:slide.previewKey?refItemHTML(slide.previewKey,tutoSectorFor(boss,slide.previewKey)):null,
       btnLabel:isLast?`C'est parti !`:'OK !',
       showSkip:!!opts.showSkip,
-      onOk:isLast?()=>{ hideTutoPop(); tutoLaunchFight(); }:hideTutoPop,
+      onOk:isLast?()=>{
+        hideTutoPop();
+        tutoLaunchFight();
+        if(slide.highlightZones)highlightEffectZones();
+      }:hideTutoPop,
     });
+  });
+}
+// Fait pulser un instant les zones d'effets Equipe/Boss pour attirer l'oeil sur les nouveaux emojis
+function highlightEffectZones(){
+  ['effects-team','effects-boss'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.classList.add('tuto-highlight-zone');
+    setTimeout(()=>el.classList.remove('tuto-highlight-zone'),2500);
   });
 }
 // Demarre reellement le combat (PV, cible, etc.) une fois l'intro terminee — reprend startGame()
