@@ -1163,7 +1163,7 @@ let G={
   infoMode:false,
   inventory:[],inventorySlots:3,
   activeBoostNext:false,activeResurr:false,activeBouclierItem:false,
-  inputLocked:false,isUndoing:false,playerEditor:null,secretTaps:0,xavierTaps:0,
+  inputLocked:false,isUndoing:false,playerEditor:null,secretTaps:0,
   bossPVRoundStart:0,teamPVAtRoundStart:0,shieldAtRoundStart:0,armorAtRoundStart:0,
   fireAtRoundStart:{stacks:0,dur:0,dmgPerStack:3},
   // rage: has1/has2 = secteurs touches cette manche ; active/dur = combo en cours (persiste 2 manches)
@@ -1218,51 +1218,6 @@ function closeCodex(){
   if(ov)ov.classList.remove('active');
 }
 
-// ============================================================
-// EASTER EGG — BON ANNIVERSAIRE XAVIER
-// ============================================================
-let _xavierTimer=null;
-function xavierTap(e){
-  if(e)e.stopPropagation();
-  G.xavierTaps=(G.xavierTaps||0)+1;
-  clearTimeout(_xavierTimer);
-  _xavierTimer=setTimeout(()=>{G.xavierTaps=0;},1500);
-  if(G.xavierTaps>=3){G.xavierTaps=0;openXavierEgg();}
-}
-function openXavierEgg(){
-  const existing=document.getElementById('xavier-ov');
-  if(existing)existing.remove();
-  const ov=document.createElement('div');
-  ov.id='xavier-ov';
-  ov.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;height:100vh;z-index:600;background:rgba(0,0,0,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden';
-  // Gâteau animé
-  const cake=document.createElement('div');
-  cake.textContent='🎂';
-  cake.style.cssText='font-size:80px;animation:bounce 1.4s ease-in-out infinite;margin-bottom:20px;line-height:1';
-  // Titre
-  const title=document.createElement('div');
-  title.textContent='BON ANNIVERSAIRE';
-  title.style.cssText='font-family:var(--font-title);font-size:32px;color:var(--gold);letter-spacing:.06em;text-align:center;margin-bottom:8px';
-  // Nom
-  const name=document.createElement('div');
-  name.textContent='Xavier !';
-  name.style.cssText='font-size:24px;color:#fff;font-style:italic;text-align:center;margin-bottom:40px';
-  // Bouton fermer
-  const btn=document.createElement('button');
-  btn.textContent='Fermer';
-  btn.style.cssText='background:transparent;border:1px solid #333;border-radius:8px;padding:8px 24px;font-family:var(--font-body);font-size:13px;color:#666;cursor:pointer;margin-top:10px;position:relative;z-index:2';
-  btn.onclick=()=>ov.remove();
-  ov.appendChild(cake);ov.appendChild(title);ov.appendChild(name);ov.appendChild(btn);
-  // Emojis tombants
-  const emojis=['🎉','🎊','🎈','✨','🎁'];
-  emojis.forEach((em,i)=>{
-    const el=document.createElement('div');
-    el.textContent=em;
-    el.style.cssText='position:absolute;font-size:28px;top:-40px;left:'+(10+i*18)+'%;animation:fall '+(2.5+i*0.4)+'s linear '+(i*0.3)+'s infinite;pointer-events:none';
-    ov.appendChild(el);
-  });
-  document.querySelector('.app').appendChild(ov);
-}
 function renderCodex(){
   const el=document.getElementById('codex-content');
   if(!el)return;
@@ -1333,7 +1288,7 @@ function renderHome(){
       </div>
       <div class="boss-pills">
         <div class="pill">Équipe <span>${b.teamPV} PV</span></div>
-        <div class="pill">Boss <span>${b.pv===666?`<span onclick="xavierTap(event)" style="cursor:pointer">666</span>`:b.pv} PV</span></div>
+        <div class="pill">Boss <span>${b.pv} PV</span></div>
         <div class="pill"><span>${b.manches}</span> manches</div>
       </div>
       <div class="boss-item-actions">
