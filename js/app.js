@@ -479,22 +479,35 @@ function tutoLaunchFight(){
 function tutoBossAttackPhase(){
   const boss=G.tuto.boss;
   const bossAction=boss.pattern[(G.manche-1)%boss.pattern.length];
-  let dmg=bossAction.val;
-  if((G.effects.shield||0)>0&&dmg>0){
-    const absorbed=Math.min(G.effects.shield,dmg);
-    G.effects.shield-=absorbed;
-    dmg-=absorbed;
+  const D=bossAction.val; // degats bruts du boss
+  let A=0; // degats absorbes par le bouclier
+  if((G.effects.shield||0)>0&&D>0){
+    A=Math.min(G.effects.shield,D);
+    G.effects.shield-=A; // le bouclier est consomme avant les PV de l'equipe
   }
-  G.teamPV=Math.max(0,G.teamPV-dmg);
-  G.stats.totalDmgTaken+=dmg;
+  const L=D-A; // PV reellement perdus par l'equipe
+  const S=G.effects.shield||0; // boucliers restants apres l'attaque
+  G.teamPV=Math.max(0,G.teamPV-L);
+  G.stats.totalDmgTaken+=L;
   updatePVBars();
   renderEffectsMini();
-  const texte=`${boss.nom} attaque ! Il vous fait −${dmg} PV. Il reste ${G.teamPV} PV à l'équipe.`;
+  const X=G.teamPV; // PV restants de l'equipe
+  let texte;
+  if(A===0){
+    texte=`Le boss attaque ! Il vous fait −${L} PV. Il reste ${X} PV à l'équipe.`;
+  } else if(L>0){
+    texte=`Le boss attaque ! Il vous fait −${D} PV, le bouclier en absorbe ${A}. Vous perdez ${L} PV. Il reste ${X} PV à l'équipe.`;
+    if(S===0)texte+=` Vous n'avez plus de boucliers.`;
+  } else {
+    texte=`Le boss attaque ! Il vous fait −${D} PV, mais le bouclier a tout absorbé : vous ne perdez aucun PV.`;
+    texte+=S===0?` Vous n'avez plus de boucliers.`:` Il vous reste ${S} de bouclier.`;
+    texte+=` Il reste ${X} PV à l'équipe.`;
+  }
   enqueueBlockingPopup({icon:'💀',text:texte,onOk:()=>{
     hideTutoPop();
     if(G.teamPV<=0){ tutoShowDefeat(); return; }
     if(G.bossPV<=0){ tutoShowVictory(); return; }
-    endRound(dmg);
+    endRound(L);
   }});
 }
 function tutoShowVictory(){
