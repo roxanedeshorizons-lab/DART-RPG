@@ -202,9 +202,19 @@ function tutoSectorFor(boss,key){
   return Array.isArray(v)?v[0]:v;
 }
 
-// Decoupe l'anneau des secteurs en tranches successives, pour des dispositions par defaut
-// raisonnables (modifiables ensuite dans le Labo, mode editeur).
-function ringSlice(start,count){ return SECTOR_RING.slice(start,start+count); }
+// Disperse les categories en alternance sur tout l'anneau (motif cyclique index % nb categories),
+// comme le "1 secteur sur 2" du tuto 2, generalise a N categories — reste toujours
+// une disposition par defaut raisonnable, modifiable ensuite dans le Labo (mode editeur).
+// 'gris' (ou tout nom absent de ACTIONS) marque les secteurs qu'on laisse de base.
+function cyclicSectors(categories){
+  const result={};
+  categories.forEach(cat=>{ if(cat!=='gris')result[cat]=[]; });
+  SECTOR_RING.forEach((num,i)=>{
+    const cat=categories[i%categories.length];
+    if(cat!=='gris')result[cat].push(num);
+  });
+  return result;
+}
 
 const TUTO_BOSSES=[
   { id:'tuto1', nom:`Tuto 1 — Premiers pas`, icon:'🎯', pv:20, teamPV:20, manches:10,
@@ -218,7 +228,7 @@ const TUTO_BOSSES=[
     afterP1:`Bien joué ! À J2 de lancer ses 3 fléchettes.`,
   },
   { id:'tuto2', nom:`Tuto 2 — Attaques légères`, icon:'🗡️', pv:40, teamPV:40, manches:14,
-    sectors:{ atk_faible: SECTOR_RING.filter((_,i)=>i%2===0) },
+    sectors: cyclicSectors(['atk_faible','gris']),
     pattern:[{type:'atk',val:5,desc:`Le boss attaque !`}],
     intro:[
       {icon:'🗡️',text:`Nouvelle règle : les attaques légères ! Un secteur sur deux est une attaque légère, l'autre reste gris.`,previewKey:'atk_faible'},
@@ -226,11 +236,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto3', nom:`Tuto 3 — Attaques moyennes et fortes`, icon:'🗡️🗡️🗡️', pv:60, teamPV:40, manches:16,
-    sectors:{
-      atk_faible: ringSlice(0,5),
-      atk_moyenne: ringSlice(5,5),
-      atk_forte: ringSlice(10,5),
-    },
+    sectors: cyclicSectors(['atk_faible','atk_moyenne','atk_forte','gris']),
     pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`}],
     intro:[
       {icon:'🗡️🗡️',text:`Nouvelle règle : les attaques moyennes !`,previewKey:'atk_moyenne'},
@@ -239,12 +245,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto4', nom:`Tuto 4 — Le soin`, icon:'💚', pv:70, teamPV:40, manches:18,
-    sectors:{
-      atk_faible: ringSlice(0,4),
-      atk_moyenne: ringSlice(4,4),
-      atk_forte: ringSlice(8,4),
-      soin: ringSlice(12,4),
-    },
+    sectors: cyclicSectors(['atk_faible','atk_moyenne','atk_forte','soin','gris']),
     pattern:[{type:'atk',val:5,desc:`Le boss attaque !`},{type:'atk',val:10,desc:`Le boss attaque plus fort !`},{type:'atk',val:15,desc:`Le boss se déchaîne !`}],
     intro:[
       {icon:'💚',text:`Nouvelle règle : le soin ! Il rend des PV à toute l'équipe.`,previewKey:'soin'},
@@ -252,13 +253,7 @@ const TUTO_BOSSES=[
     ],
   },
   { id:'tuto5', nom:`Tuto 5 — Le bouclier`, icon:'🛡️', pv:80, teamPV:40, manches:20,
-    sectors:{
-      atk_faible: ringSlice(0,4),
-      atk_moyenne: ringSlice(4,4),
-      atk_forte: ringSlice(8,3),
-      soin: ringSlice(11,3),
-      bouclier: ringSlice(14,3),
-    },
+    sectors: cyclicSectors(['atk_faible','atk_moyenne','atk_forte','soin','bouclier','gris']),
     pattern:[{type:'atk',val:10,desc:`Le boss attaque !`},{type:'atk',val:15,desc:`Le boss attaque plus fort !`},{type:'atk',val:20,desc:`Le boss se déchaîne !`}],
     intro:[
       {icon:'🛡️',text:`Nouvelle règle : le bouclier ! Les boucliers s'additionnent et absorbent les dégâts du boss avant les PV de l'équipe.`,previewKey:'bouclier'},
