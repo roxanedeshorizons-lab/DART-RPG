@@ -1,5 +1,10 @@
 ﻿
 
+// Active les outils de creation (Codex secret, bouton Labo sur les boss,
+// editeur de tutos). A true en production. Le build itch.io le bascule
+// a false dans sa copie uniquement, sans toucher a ce depot.
+const CREATION_TOOLS_ENABLED=true;
+
 // ============================================================
 // CONFIG
 // ============================================================
@@ -555,6 +560,7 @@ function showTutoIfFirstLaunch(){
 let _tutoMenuTapCount=0;
 let _tutoMenuTapTimer=null;
 function tutoMenuButtonClick(){
+  if(!CREATION_TOOLS_ENABLED){ openTutoMenu(); return; }
   _tutoMenuTapCount++;
   clearTimeout(_tutoMenuTapTimer);
   if(_tutoMenuTapCount>=5){
@@ -1200,6 +1206,7 @@ function hideRef(){document.getElementById('ref-page').classList.remove('visible
 // ============================================================
 let _secretTimer=null;
 function secretTap(){
+  if(!CREATION_TOOLS_ENABLED)return;
   G.secretTaps=(G.secretTaps||0)+1;
   const t=document.getElementById('home-title');
   if(t){t.classList.remove('title-tap-flash');void t.offsetWidth;t.classList.add('title-tap-flash');}
@@ -1293,7 +1300,7 @@ function renderHome(){
       </div>
       <div class="boss-item-actions">
         ${b.custom?`<button onclick="event.stopPropagation();deleteCustomBoss('${b.id}')">🗑️ Supprimer</button>`:''}
-        <button class="boss-labo-btn" onclick="event.stopPropagation();openLaboForBoss(${i})" title="Ouvrir dans le Labo">⚗️</button>
+        ${CREATION_TOOLS_ENABLED?`<button class="boss-labo-btn" onclick="event.stopPropagation();openLaboForBoss(${i})" title="Ouvrir dans le Labo">⚗️</button>`:''}
       </div>
     </div>`).join('');
   const pl=document.getElementById('players-list');
